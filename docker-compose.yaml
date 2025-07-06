@@ -1,5 +1,5 @@
 services:
-  soc-api-profile:
+  soc-api-transaction:
     build:
       context: .
       target: transaction
