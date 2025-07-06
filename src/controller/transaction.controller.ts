@@ -3,6 +3,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateTransactionCommand } from 'src/command/transaction/createTransaction.command';
 import { UpdateTransactionCommand } from 'src/command/transaction/updateTransaction.command';
 import { ApiResponse } from 'src/common/response/apiResponse.dto';
+import { TransactionDetailView } from 'src/entities/transactionDetailView.entity';
 import { FindAllTransactionQuery } from 'src/query/transaction/findAllTransaction.query';
 
 @Controller('transactions/transaction')
@@ -13,7 +14,7 @@ export class TransactionController {
   ) {}
 
   @Post('/create-transaction')
-  async createTransaction(@Body() command: CreateTransactionCommand) : Promise<ApiResponse<boolean>> {
+  async createTransaction(@Body() command: CreateTransactionCommand) : Promise<ApiResponse<string>> {
     return await this.commandBus.execute(command);
   }
 
@@ -23,7 +24,7 @@ export class TransactionController {
   }
 
   @Get('/find-all-transaction')
-  async findAllTransaction(@Query('username') username: string) : Promise<ApiResponse<any>> {
+  async findAllTransaction(@Query('username') username: string) : Promise<ApiResponse<TransactionDetailView[]>> {
     return await this.queryBus.execute(new FindAllTransactionQuery(username));
   }
 }

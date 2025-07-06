@@ -4,6 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ProductEntity } from "src/entities/product.entity";
 import { ProfileEntity } from "src/entities/profile.entity";
 import { ProfileProductEntity } from "src/entities/profileProduct.entity";
+import { ProfileStripeAccountEntity } from "src/entities/profileStripeAccount.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionDecisionEntity } from "src/entities/transactionDecision.entity";
 import { TransactionDetailView } from "src/entities/transactionDetailView.entity";
@@ -51,7 +52,8 @@ import { Transaction } from "typeorm";
                 password: configService.get<string>('MARIADB_PASSWORD'),
                 database: configService.get<string>('MARIADB_NAME_PROFILE'),
                 entities: [
-                    ProfileEntity
+                    ProfileEntity,
+                    ProfileStripeAccountEntity
                 ],
                 synchronize: false,
             }),
@@ -86,7 +88,8 @@ import { Transaction } from "typeorm";
             TransactionDetailView
         ]),
         TypeOrmModule.forFeature([
-            ProfileEntity
+            ProfileEntity,
+            ProfileStripeAccountEntity
         ], 'profiles'),
         TypeOrmModule.forFeature([
             ProductEntity,

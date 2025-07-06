@@ -1,13 +1,13 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { CommandBus, CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CreateTransactionCommand } from "src/command/transaction/createTransaction.command";
+import { GeneratePaymentCommand } from "src/command/transactionPayment/generatePayment.command";
 import { ApiResponse } from "src/common/response/apiResponse.dto";
 import { ResponseCode } from "src/common/response/responseCode";
 import { ProductEntity } from "src/entities/product.entity";
 import { ProfileEntity } from "src/entities/profile.entity";
 import { ProfileProductEntity } from "src/entities/profileProduct.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
-import { TransactionDecisionEntity } from "src/entities/transactionDecision.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { Repository } from "typeorm";
 
@@ -26,20 +26,18 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
         private readonly transactionRepository: Repository<TransactionEntity>,
         @InjectRepository(TransactionStateEntity)
         private readonly transactionStateRepository: Repository<TransactionStateEntity>,
-        @InjectRepository(TransactionDecisionEntity)
-        private readonly transactionDecisionRepository: Repository<TransactionDecisionEntity>
+        private readonly commandBus: CommandBus
     ) {
 
     }
 
-    async execute(command: CreateTransactionCommand): Promise<ApiResponse<boolean>> {
+    async execute(command: CreateTransactionCommand): Promise<ApiResponse<{ paymentUrl: string; paymentId: string }>> {
         try {
-            const response = new ApiResponse<boolean>();
+            const response = new ApiResponse<{ paymentUrl: string; paymentId: string }>();
 
             const [isValidUsernames, usernameMessage] = await this.validateUsernames(command.SellerUsername, command.BuyerUsername);
             if (!isValidUsernames) {
                 response.status = ResponseCode.ERROR;
-                response.data = false;
                 response.message = usernameMessage;
                 return response;
             }
@@ -47,26 +45,11 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
             const [isValidProduct, productMessage] = await this.validateProduct(command);
             if (!isValidProduct) {
                 response.status = ResponseCode.ERROR;
-                response.data = false;
                 response.message = productMessage;
                 return response;
             }
 
             const findTransactionState = await this.transactionStateRepository.findOneBy({ TransactionStateCode: 'TS-01' });
-
-            const findDuplicateTransaction = await this.transactionRepository.findBy({
-                SellerUsername: command.SellerUsername,
-                BuyerUsername: command.BuyerUsername,
-                ProductId: product?.Id || 0,
-                TransactionStateId: findTransactionState?.Id || 0
-            })
-
-            if (findDuplicateTransaction.length > 0) {
-                response.status = ResponseCode.ERROR;
-                response.data = false;
-                response.message = 'Ya existe una transacción pendiente entre el vendedor y el comprador para este producto';
-                return response;
-            }
 
             const createTransaction = new TransactionEntity();
             createTransaction.SellerUsername = command.SellerUsername;
@@ -80,17 +63,19 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
 
             await this.transactionRepository.save(createTransaction);
 
-            const transactionDecision = new TransactionDecisionEntity();
-            transactionDecision.TransactionId = createTransaction.Id;
-            transactionDecision.Username = command.BuyerUsername;
-            transactionDecision.IsAccepted = true;
-            transactionDecision.Version = 1;
+            const generatePaymentCommand = new GeneratePaymentCommand(); 
+            generatePaymentCommand.TransactionCode = createTransaction.TransactionCode;
 
-            await this.transactionDecisionRepository.save(transactionDecision);
+            const generatePayment = await this.commandBus.execute(generatePaymentCommand);
+            if (generatePayment.status !== ResponseCode.SUCCESS) {
+                response.status = ResponseCode.ERROR;
+                response.message = "Transacion creada exitosamente, pero no se pudo generar el enlace de pago, puedes intentar nuevamente en la sección de transacciones.";
+                return response;
+            }
 
             response.status = ResponseCode.SUCCESS;
-            response.data = true;
-            response.message = 'Transaction created successfully';
+            response.data = generatePayment.data;
+            response.message = 'Transacción creada exitosamente.';
             return response;
         } catch (error) {
             throw new Error(`Error creating transaction: ${error.message}`);
