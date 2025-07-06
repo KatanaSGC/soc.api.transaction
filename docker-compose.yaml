@@ -2,7 +2,7 @@ services:
   soc-api-transaction:
     build:
       context: .
-      target: transaction
+      target: production
     container_name: soc-api-transaction
     ports:
       - "3003:3000"
