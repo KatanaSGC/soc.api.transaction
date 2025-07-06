@@ -1,0 +1,31 @@
+services:
+  soc-api-profile:
+    build:
+      context: .
+      target: transaction
+    container_name: soc-api-transaction
+    ports:
+      - "3003:3000"
+    environment:
+      - MARIADB_HOST=${MARIADB_HOST}
+      - MARIADB_PORT=${MARIADB_PORT}
+      - MARIADB_USERNAME=${MARIADB_USERNAME}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_NAME=${MARIADB_NAME}
+      - MARIADB_NAME_PROFILE=${MARIADB_NAME_PROFILE}
+      - MARIADB_NAME_PRODUCT=${MARIADB_NAME_PRODUCT}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - APP_URL=${APP_URL}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - soc-network
+
+networks:
+  soc-network:
+    external: true

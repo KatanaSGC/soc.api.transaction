@@ -291,8 +291,6 @@ export class StripeService {
         }
     }
 
-    // Agregar al final de src/services/stripe.service.ts
-
     async createRefund(
         paymentIntentId: string,
         amount?: number,
@@ -306,7 +304,6 @@ export class StripeService {
                 metadata: metadata || {}
             };
 
-            // Si se especifica un monto, convertir a centavos
             if (amount) {
                 refundParams.amount = Math.round(amount * 100);
             }
