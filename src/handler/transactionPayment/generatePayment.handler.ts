@@ -30,6 +30,9 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
             });
 
             if (!findTransaction) {
+
+                console.error("Transaction not found for code:", command.TransactionCode);
+
                 return {
                     status: ResponseCode.ERROR,
                     message: "Transaction not found.",
