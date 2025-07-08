@@ -49,6 +49,9 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
                 PaymentStatus: 'pending'
             });
             if (findTransactionPayment) {
+
+                console.log("Payment link already exists for transaction:", findTransaction.TransactionCode);
+
                 return {
                     status: ResponseCode.SUCCESS,
                     message: "Payment link already exists.",
