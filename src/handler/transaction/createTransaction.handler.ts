@@ -68,6 +68,8 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
                 }
             });
 
+            console.log('Createating transaction with profileProductPrice:', profileProductPrice);
+
             const createTransaction = new TransactionEntity();
             createTransaction.SellerUsername = command.SellerUsername;
             createTransaction.BuyerUsername = command.BuyerUsername;
@@ -80,8 +82,12 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
 
             await this.transactionRepository.save(createTransaction);
 
+            console.log('Transaction created:', createTransaction);
+
             const generatePaymentCommand = new GeneratePaymentCommand();
             generatePaymentCommand.TransactionCode = createTransaction.TransactionCode;
+
+            console.log('Generating payment with command:', generatePaymentCommand);
 
             const generatePayment = await this.commandBus.execute(generatePaymentCommand);
             if (generatePayment.status !== ResponseCode.SUCCESS) {
@@ -89,6 +95,8 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
                 response.message = "Transacion creada exitosamente, pero no se pudo generar el enlace de pago, puedes intentar nuevamente en la sección de transacciones.";
                 return response;
             }
+
+            console.log('Payment generated:', generatePayment.data);
 
             response.status = ResponseCode.SUCCESS;
             response.data = generatePayment.data;
