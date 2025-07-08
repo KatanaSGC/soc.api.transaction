@@ -4,7 +4,7 @@ services:
       context: .
       target: production
     container_name: soc-api-transaction
-    image: soc.api.transaction:latest
+    image: transaction-service:latest
     ports:
       - "3003:3000"
 #    env_file:
