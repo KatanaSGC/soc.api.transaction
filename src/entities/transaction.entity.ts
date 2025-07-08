@@ -25,9 +25,6 @@ export class TransactionEntity {
 
     @Column({ type: 'int', nullable: false })
     TransactionStateId: number;
-
-    @Column({ type: 'int', nullable: false })
-    ProductId: number;
     
     @Column({ type: 'date', nullable: false })
     CreatedAt: Date;

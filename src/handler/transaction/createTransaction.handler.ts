@@ -78,7 +78,6 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
             createTransaction.ProductUnits = command.ProductUnits;
             createTransaction.AmountOffered = profileProductPrice?.Price || 0;
             createTransaction.TransactionStateId = findTransactionState?.Id || 0;
-            createTransaction.ProductId = product?.Id || 0;
 
             await this.transactionRepository.save(createTransaction);
 
