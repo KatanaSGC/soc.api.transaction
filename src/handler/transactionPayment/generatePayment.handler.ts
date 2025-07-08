@@ -23,6 +23,8 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
 
     async execute(command: GeneratePaymentCommand): Promise<ApiResponse<{ paymentUrl: string; paymentId: string }>> {
         try {
+            console.log("Searching for transaction with code:", command.TransactionCode);
+
             const findTransaction = await this.transactionRepository.findOneBy({
                 TransactionCode: command.TransactionCode
             });
@@ -36,6 +38,9 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
                 };
             }
 
+            console.log("Transaction found:", findTransaction);
+
+        
             const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
                 TransactionId: findTransaction.Id,
                 PaymentStatus: 'pending'
@@ -52,6 +57,8 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
                 };
             }
 
+            console.log("Generating payment link for transaction:", findTransaction.TransactionCode);
+
             const amount = findTransaction.AmountOffered;
             const currency = "hnl";
             const description = `Pago de transacción ${findTransaction.TransactionCode}`;
@@ -62,6 +69,8 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
                 description,
                 findTransaction.TransactionCode
             );
+
+            console.log("Payment link generated:", paymentLink);
 
             const transactionState = await this.transactionPaymentStateRepository.findOneBy({
                 TransactionPaymentStateCode: 'TPS-01'
@@ -76,6 +85,8 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
             transactionPayment.StripePaymentLinkId = paymentLink.id;
             transactionPayment.PaymentUrl = paymentLink.url;
             transactionPayment.PaymentStatus = 'pending';
+
+            console.log("Saving transaction payment:", transactionPayment);
 
 
             await this.transactionPaymentRepository.save(transactionPayment);
