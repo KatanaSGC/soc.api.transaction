@@ -12,6 +12,7 @@ import { TransactionDecisionEntity } from "src/entities/transactionDecision.enti
 import { TransactionDetailView } from "src/entities/transactionDetailView.entity";
 import { FindAllTransactionHandler } from "./findAllTransaction.handler";
 import { UpdateTransactionHandler } from "./updateTransaction.handler";
+import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.entity";
 
 @Module({
     imports: [
@@ -27,7 +28,8 @@ import { UpdateTransactionHandler } from "./updateTransaction.handler";
         ], 'profiles'),
         TypeOrmModule.forFeature([
             ProfileProductEntity,
-            ProductEntity
+            ProductEntity,
+            ProfileProductPriceEntity
         ], 'products'),
     ],
     providers: [

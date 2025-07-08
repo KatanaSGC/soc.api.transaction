@@ -4,6 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ProductEntity } from "src/entities/product.entity";
 import { ProfileEntity } from "src/entities/profile.entity";
 import { ProfileProductEntity } from "src/entities/profileProduct.entity";
+import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.entity";
 import { ProfileStripeAccountEntity } from "src/entities/profileStripeAccount.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionDecisionEntity } from "src/entities/transactionDecision.entity";
@@ -71,7 +72,8 @@ import { Transaction } from "typeorm";
                 database: configService.get<string>('MARIADB_NAME_PRODUCT'),
                 entities: [
                     ProfileProductEntity,
-                    ProductEntity
+                    ProductEntity,
+                    ProfileProductPriceEntity
                 ],
                 synchronize: false,
             }),

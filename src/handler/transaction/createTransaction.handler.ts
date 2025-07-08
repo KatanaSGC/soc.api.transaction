@@ -7,11 +7,15 @@ import { ResponseCode } from "src/common/response/responseCode";
 import { ProductEntity } from "src/entities/product.entity";
 import { ProfileEntity } from "src/entities/profile.entity";
 import { ProfileProductEntity } from "src/entities/profileProduct.entity";
+import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { Repository } from "typeorm";
 
 let product: ProductEntity | null = null;
+let profileProduct: ProfileProductEntity | null = null;
+let profileProductPrice: ProfileProductPriceEntity | null = null;
+
 
 @CommandHandler(CreateTransactionCommand)
 export class CreateTransactionHandler implements ICommandHandler<CreateTransactionCommand> {
@@ -26,7 +30,9 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
         private readonly transactionRepository: Repository<TransactionEntity>,
         @InjectRepository(TransactionStateEntity)
         private readonly transactionStateRepository: Repository<TransactionStateEntity>,
-        private readonly commandBus: CommandBus
+        private readonly commandBus: CommandBus,
+        @InjectRepository(ProfileProductPriceEntity, 'products')
+        private readonly profileProductPriceRepository: Repository<ProfileProductPriceEntity>
     ) {
 
     }
@@ -51,19 +57,30 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
 
             const findTransactionState = await this.transactionStateRepository.findOneBy({ TransactionStateCode: 'TS-01' });
 
+            profileProductPrice = await this.profileProductPriceRepository.findOne({
+                where: {
+                    ProfileId: profileProduct!.ProfileId,
+                    ProductId: profileProduct!.ProductId,
+                    UnitTypeId: profileProduct!.UnitTypeId
+                },
+                order: {
+                    CreatedAt: 'DESC'
+                }
+            });
+
             const createTransaction = new TransactionEntity();
             createTransaction.SellerUsername = command.SellerUsername;
             createTransaction.BuyerUsername = command.BuyerUsername;
             createTransaction.TransactionCode = await this.generateTransactionCode();
             createTransaction.ProductDescription = product?.Description || '';
             createTransaction.ProductUnits = command.ProductUnits;
-            createTransaction.AmountOffered = command.AmountOffered;
+            createTransaction.AmountOffered = profileProductPrice?.Price || 0;
             createTransaction.TransactionStateId = findTransactionState?.Id || 0;
             createTransaction.ProductId = product?.Id || 0;
 
             await this.transactionRepository.save(createTransaction);
 
-            const generatePaymentCommand = new GeneratePaymentCommand(); 
+            const generatePaymentCommand = new GeneratePaymentCommand();
             generatePaymentCommand.TransactionCode = createTransaction.TransactionCode;
 
             const generatePayment = await this.commandBus.execute(generatePaymentCommand);
@@ -98,7 +115,7 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
     }
 
     async validateProduct(command: CreateTransactionCommand): Promise<[boolean, string]> {
-        const profileProduct = await this.profileProductRepository.findOneBy({ Id: command.ProfileProductId });
+        profileProduct = await this.profileProductRepository.findOneBy({ Id: command.ProfileProductId });
         if (!profileProduct) return [false, 'Profile product does not exist'];
 
         if (profileProduct.Units < command.ProductUnits) return [false, 'Insufficient units in profile product'];

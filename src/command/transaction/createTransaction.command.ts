@@ -9,10 +9,6 @@ export class CreateTransactionCommand {
 
     @IsNumber()
     @Min(1)
-    AmountOffered: number;
-
-    @IsNumber()
-    @Min(1)
     ProfileProductId: number;
 
     @IsNumber()
