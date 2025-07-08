@@ -39,7 +39,6 @@ export class UpdateTransactionHandler implements ICommandHandler<UpdateTransacti
         createTransaction.TransactionStateId = transaction!.TransactionStateId;
         createTransaction.ProductUnits = command.ProductUnits
         createTransaction.AmountOffered = command.AmountOffered;
-        createTransaction.ProductId = transaction!.ProductId;
 
         await this.transactionRepository.save(createTransaction);
 
