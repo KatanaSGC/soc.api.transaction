@@ -40,13 +40,6 @@ export class UpdatePaymentStatusHandler implements ICommandHandler<UpdatePayment
                 };
             }
 
-            // Actualizar el estado del pago
-            payment.PaymentStatus = command.status;
-            
-            // Guardar información adicional de Stripe si está disponible
-            if (command.stripePaymentIntentId) {
-                // Podrías agregar un campo para esto en la entidad si es necesario
-            }
 
             await this.transactionPaymentRepository.save(payment);
 

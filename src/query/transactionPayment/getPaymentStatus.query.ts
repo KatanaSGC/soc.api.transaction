@@ -16,7 +16,7 @@ export class GetPaymentStatusHandler implements IQueryHandler<GetPaymentStatusQu
         private readonly transactionPaymentRepository: Repository<TransactionPaymentEntity>,
     ) {}
 
-    async execute(query: GetPaymentStatusQuery): Promise<ApiResponse<{ status: string; paymentUrl?: string; paymentId?: string }>> {
+    async execute(query: GetPaymentStatusQuery): Promise<ApiResponse<{  paymentUrl?: string; paymentId?: string }>> {
         try {
             // Buscar el pago por código de transacción
             const payment = await this.transactionPaymentRepository
@@ -39,7 +39,6 @@ export class GetPaymentStatusHandler implements IQueryHandler<GetPaymentStatusQu
                 status: ResponseCode.SUCCESS,
                 message: 'Payment status retrieved successfully.',
                 data: {
-                    status: payment.PaymentStatus || 'pending',
                     paymentUrl: payment.PaymentUrl,
                     paymentId: payment.StripePaymentLinkId || payment.StripeCheckoutSessionId
                 },

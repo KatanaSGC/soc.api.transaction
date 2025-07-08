@@ -45,8 +45,7 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
 
         
             const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-                TransactionId: findTransaction.Id,
-                PaymentStatus: 'pending'
+                TransactionId: findTransaction.Id
             });
             if (findTransactionPayment) {
 
@@ -90,10 +89,8 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
             transactionPayment.IsStripePayment = true;
             transactionPayment.StripePaymentLinkId = paymentLink.id;
             transactionPayment.PaymentUrl = paymentLink.url;
-            transactionPayment.PaymentStatus = 'pending';
 
             console.log("Saving transaction payment:", transactionPayment);
-
 
             await this.transactionPaymentRepository.save(transactionPayment);
 

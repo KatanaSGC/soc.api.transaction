@@ -30,10 +30,7 @@ export class TransactionPaymentEntity {
     StripeCheckoutSessionId: string;
 
     @Column({ type: 'text', nullable: true })
-    PaymentUrl: string;
-
-    @Column({ type: 'varchar', length: 50, nullable: true })
-    PaymentStatus: string; // pending, completed, failed, canceled
+    PaymentUrl: string;W
 
     @Column({ type: 'date', nullable: false })
     CreatedAt: Date;

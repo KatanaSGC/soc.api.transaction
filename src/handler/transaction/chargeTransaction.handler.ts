@@ -63,11 +63,6 @@ export class ChargeTransaccionHandler implements ICommandHandler<ChargeTransacci
                 return response;
             }
 
-            if (findTransactionPayment.PaymentStatus === 'transferred_to_seller') {
-                response.message = "Ya se ha transferido el pago al vendedor para esta transacción.";
-                return response;
-            }
-
             const sellerProfile = await this.profileRepository.findOneBy({
                 Identify: findTransaction.SellerUsername
             });
