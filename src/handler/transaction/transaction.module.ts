@@ -13,6 +13,9 @@ import { TransactionDetailView } from "src/entities/transactionDetailView.entity
 import { FindAllTransactionHandler } from "./findAllTransaction.handler";
 import { UpdateTransactionHandler } from "./updateTransaction.handler";
 import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.entity";
+import { GenerateTransactionHandler } from "./generateTransaction.handler";
+import { ShoppingCartEntity } from "src/entities/shoppingCart.entity";
+import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailView.entity";
 
 @Module({
     imports: [
@@ -21,7 +24,9 @@ import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.enti
             TransactionEntity,
             TransactionStateEntity,
             TransactionDecisionEntity,
-            TransactionDetailView
+            TransactionDetailView,
+            ShoppingCartEntity,
+            ShoppingCartDetailViewEntity
         ]),
         TypeOrmModule.forFeature([
             ProfileEntity
@@ -35,12 +40,14 @@ import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.enti
     providers: [
         CreateTransactionHandler,
         UpdateTransactionHandler,
-        FindAllTransactionHandler
+        FindAllTransactionHandler,
+        GenerateTransactionHandler
     ],
     exports: [
         CreateTransactionHandler,
         UpdateTransactionHandler,
-        FindAllTransactionHandler
+        FindAllTransactionHandler,
+        GenerateTransactionHandler
     ]
 })
 export class TransactionModule { }

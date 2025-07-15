@@ -71,12 +71,11 @@ export class CreateTransactionHandler implements ICommandHandler<CreateTransacti
             console.log('Createating transaction with profileProductPrice:', profileProductPrice);
 
             const createTransaction = new TransactionEntity();
-            createTransaction.SellerUsername = command.SellerUsername;
-            createTransaction.BuyerUsername = command.BuyerUsername;
+            
             createTransaction.TransactionCode = await this.generateTransactionCode();
-            createTransaction.ProductDescription = product?.Description || '';
-            createTransaction.ProductUnits = command.ProductUnits;
-            createTransaction.AmountOffered = profileProductPrice?.Price || 0;
+            //createTransaction.ProductDescription = product?.Description || '';
+            //createTransaction.ProductUnits = command.ProductUnits;
+            //createTransaction.AmountOffered = profileProductPrice?.Price || 0;
             createTransaction.TransactionStateId = findTransactionState?.Id || 0;
 
             await this.transactionRepository.save(createTransaction);

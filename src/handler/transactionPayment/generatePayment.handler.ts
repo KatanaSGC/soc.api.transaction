@@ -12,8 +12,6 @@ import { Repository } from "typeorm";
 @CommandHandler(GeneratePaymentCommand)
 export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCommand> {
     constructor(
-        @InjectRepository(TransactionEntity)
-        private readonly transactionRepository: Repository<TransactionEntity>,
         @InjectRepository(TransactionPaymentEntity)
         private readonly transactionPaymentRepository: Repository<TransactionPaymentEntity>,
         @InjectRepository(TransactionPaymentStateEntity)
@@ -22,96 +20,66 @@ export class GeneratePaymentHandler implements ICommandHandler<GeneratePaymentCo
     ) { }
 
     async execute(command: GeneratePaymentCommand): Promise<ApiResponse<{ paymentUrl: string; paymentId: string }>> {
-        try {
-            console.log("Searching for transaction with code:", command.TransactionCode);
+        const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
+            TransactionCode: command.TransactionCode
+        });
+        if (findTransactionPayment) {
 
-            const findTransaction = await this.transactionRepository.findOneBy({
-                TransactionCode: command.TransactionCode
-            });
-
-            if (!findTransaction) {
-
-                console.error("Transaction not found for code:", command.TransactionCode);
-
-                return {
-                    status: ResponseCode.ERROR,
-                    message: "Transaction not found.",
-                    data: null,
-                    error: "Transaction with the provided code does not exist."
-                };
-            }
-
-            console.log("Transaction found:", findTransaction);
-
-        
-            const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-                TransactionId: findTransaction.Id
-            });
-            if (findTransactionPayment) {
-
-                console.log("Payment link already exists for transaction:", findTransaction.TransactionCode);
-
-                return {
-                    status: ResponseCode.SUCCESS,
-                    message: "Payment link already exists.",
-                    data: {
-                        paymentUrl: findTransactionPayment.PaymentUrl,
-                        paymentId: findTransactionPayment.StripePaymentLinkId
-                    },
-                    error: null
-                };
-            }
-
-            console.log("Generating payment link for transaction:", findTransaction.TransactionCode);
-
-            const amount = findTransaction.AmountOffered;
-            const currency = "hnl";
-            const description = `Pago de transacción ${findTransaction.TransactionCode}`;
-
-            const paymentLink = await this.stripeService.createPaymentLink(
-                amount,
-                currency,
-                description,
-                findTransaction.TransactionCode
-            );
-
-            console.log("Payment link generated:", paymentLink);
-
-            const transactionState = await this.transactionPaymentStateRepository.findOneBy({
-                TransactionPaymentStateCode: 'TPS-01'
-            })
-
-            const transactionPayment = new TransactionPaymentEntity();
-            transactionPayment.TransactionId = findTransaction.Id;
-            transactionPayment.TransactionUnlockCode = this.generateRandomCode(32);
-            transactionPayment.TransactionSecurityCode = this.generateRandomCode(32);
-            transactionPayment.TransactionPaymentStateId = transactionState?.Id || 0;
-            transactionPayment.IsStripePayment = true;
-            transactionPayment.StripePaymentLinkId = paymentLink.id;
-            transactionPayment.PaymentUrl = paymentLink.url;
-
-            console.log("Saving transaction payment:", transactionPayment);
-
-            await this.transactionPaymentRepository.save(transactionPayment);
+            console.log("Payment link already exists for transaction:", command.TransactionCode);
 
             return {
                 status: ResponseCode.SUCCESS,
-                message: "Payment link generated successfully.",
+                message: "Payment link already exists.",
                 data: {
-                    paymentUrl: paymentLink.url,
-                    paymentId: paymentLink.id
+                    paymentUrl: findTransactionPayment.PaymentUrl,
+                    paymentId: findTransactionPayment.StripePaymentLinkId
                 },
                 error: null
             };
-
-        } catch (error) {
-            return {
-                status: ResponseCode.EXCEPTION,
-                message: `Error generating payment: ${error.message}`,
-                data: null,
-                error: error.message
-            };
         }
+
+        console.log("Generating payment link for transaction:", command.TransactionCode);
+
+        const currency = "hnl";
+        const description = `Pago de transacción ${command.TransactionCode}`;
+
+        const paymentLink = await this.stripeService.createPaymentLink(
+            command.Amount,
+            currency,
+            description,
+            command.TransactionCode
+        );
+
+        console.log("Payment link generated:", paymentLink);
+
+        const transactionState = await this.transactionPaymentStateRepository.findOneBy({
+            TransactionPaymentStateCode: 'TPS-01'
+        })
+
+        const transactionPayment = new TransactionPaymentEntity();
+        transactionPayment.TransactionCode = command.TransactionCode;
+        transactionPayment.TransactionUnlockCode = this.generateRandomCode(6);
+        transactionPayment.TransactionSecurityCode = this.generateRandomCode(32);
+        transactionPayment.TransactionPaymentStateId = transactionState?.Id || 0;
+        transactionPayment.IsStripePayment = true;
+        transactionPayment.StripePaymentLinkId = paymentLink.id;
+        transactionPayment.PaymentUrl = paymentLink.url;
+        transactionPayment.Amount = command.Amount;
+
+
+        console.log("Saving transaction payment:", transactionPayment);
+
+        await this.transactionPaymentRepository.save(transactionPayment);
+
+        return {
+            status: ResponseCode.SUCCESS,
+            message: "Payment link generated successfully.",
+            data: {
+                paymentUrl: paymentLink.url,
+                paymentId: paymentLink.id
+            },
+            error: null
+        };
     }
 
     private generateRandomCode(length: number): string {

@@ -6,6 +6,8 @@ import { ProfileEntity } from "src/entities/profile.entity";
 import { ProfileProductEntity } from "src/entities/profileProduct.entity";
 import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.entity";
 import { ProfileStripeAccountEntity } from "src/entities/profileStripeAccount.entity";
+import { ShoppingCartEntity } from "src/entities/shoppingCart.entity";
+import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailView.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionDecisionEntity } from "src/entities/transactionDecision.entity";
 import { TransactionDetailView } from "src/entities/transactionDetailView.entity";
@@ -36,7 +38,9 @@ import { Transaction } from "typeorm";
                     TransactionPaymentMethodEntity,
                     TransactionPaymentStateEntity,
                     TransactionStateEntity,
-                    TransactionDetailView
+                    TransactionDetailView,
+                    ShoppingCartDetailViewEntity,
+                    ShoppingCartEntity
                 ],
                 synchronize: false,
             }),
@@ -87,7 +91,9 @@ import { Transaction } from "typeorm";
             TransactionPaymentMethodEntity,
             TransactionPaymentStateEntity,
             TransactionStateEntity,
-            TransactionDetailView
+            TransactionDetailView,
+            ShoppingCartDetailViewEntity,
+            ShoppingCartEntity
         ]),
         TypeOrmModule.forFeature([
             ProfileEntity,

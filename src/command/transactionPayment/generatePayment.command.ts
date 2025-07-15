@@ -4,4 +4,6 @@ export class GeneratePaymentCommand
 {
     @IsNotEmpty()
     TransactionCode: string;
+    
+    Amount: number;
 }

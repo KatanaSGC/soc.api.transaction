@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 
-export class ConfirmTransactionCommand
+export class GenerateTransactionCommand
 {
     @IsNotEmpty()
-    TransactionCode: string;
+    BuyerUsername: string;
 }

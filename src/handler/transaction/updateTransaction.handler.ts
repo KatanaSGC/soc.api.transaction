@@ -33,12 +33,12 @@ export class UpdateTransactionHandler implements ICommandHandler<UpdateTransacti
 
         const createTransaction = new TransactionEntity();
         createTransaction.TransactionCode = transaction!.TransactionCode;
-        createTransaction.BuyerUsername = transaction!.BuyerUsername;
+        /*createTransaction.BuyerUsername = transaction!.BuyerUsername;
         createTransaction.SellerUsername = transaction!.SellerUsername;
         createTransaction.ProductDescription = transaction!.ProductDescription;
         createTransaction.TransactionStateId = transaction!.TransactionStateId;
         createTransaction.ProductUnits = command.ProductUnits
-        createTransaction.AmountOffered = command.AmountOffered;
+        createTransaction.AmountOffered = command.AmountOffered;*/
 
         await this.transactionRepository.save(createTransaction);
 

@@ -46,7 +46,7 @@ export class ChargeTransaccionHandler implements ICommandHandler<ChargeTransacci
             }
 
             const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-                TransactionId: findTransaction.Id,
+                //TransactionId: findTransaction.Id,
             });
 
             if (!findTransactionPayment) {
@@ -64,7 +64,7 @@ export class ChargeTransaccionHandler implements ICommandHandler<ChargeTransacci
             }
 
             const sellerProfile = await this.profileRepository.findOneBy({
-                Identify: findTransaction.SellerUsername
+                //Identify: findTransaction.SellerUsername
             });
 
             if (!sellerProfile) {
@@ -83,7 +83,7 @@ export class ChargeTransaccionHandler implements ICommandHandler<ChargeTransacci
                 return response;
             }
 
-            const paymentCalculation = this.calculateSellerPayment(findTransaction.AmountOffered);
+            const paymentCalculation = this.calculateSellerPayment(0);
             const transfer = await this.stripeService.createTransfer(
                 paymentCalculation.sellerAmount,
                 'hnl',
@@ -186,6 +186,6 @@ export class ChargeTransaccionHandler implements ICommandHandler<ChargeTransacci
             return null;
         }
 
-        return this.calculateSellerPayment(findTransaction.AmountOffered);
+        return this.calculateSellerPayment(0);
     }
 }

@@ -40,7 +40,7 @@ export class RefundPaymentHandler implements ICommandHandler<RefundTransactionCo
             }
 
             const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-                TransactionId: findTransaction.Id,
+                //TransactionId: findTransaction.Id,
             });
 
             if (!findTransactionPayment) {
@@ -62,7 +62,7 @@ export class RefundPaymentHandler implements ICommandHandler<RefundTransactionCo
                 return response;
             }
 
-            const originalAmount = findTransaction.AmountOffered;
+            const originalAmount = 0 //findTransaction.AmountOffered;
             const refundCalculation = this.calculateRefundAmount(originalAmount);
 
             const refund = await this.stripeService.createRefund(

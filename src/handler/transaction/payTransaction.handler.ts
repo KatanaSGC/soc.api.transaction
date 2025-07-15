@@ -36,7 +36,7 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
         }        
 
         const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-            TransactionId: findTransaction.Id,            
+            //TransactionId: findTransaction.Id,            
         });
         if (!findTransactionPayment) {
             response.data = false;

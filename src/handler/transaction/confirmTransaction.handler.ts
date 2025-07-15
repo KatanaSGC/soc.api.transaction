@@ -18,8 +18,6 @@ export class ConfirmTransactionHandler implements ICommandHandler<ConfirmTransac
     constructor(
         @InjectRepository(TransactionEntity)
         private readonly transactionRepository: Repository<TransactionEntity>,
-        @InjectRepository(TransactionDecisionEntity)
-        private readonly transactionDecisionRepository: Repository<TransactionDecisionEntity>,
         @InjectRepository(TransactionStateEntity)
         private readonly transactionStateRepository: Repository<TransactionStateEntity>
     ) { }
@@ -35,7 +33,6 @@ export class ConfirmTransactionHandler implements ICommandHandler<ConfirmTransac
             return response;
         }
 
-        await this.createTransactionDecision(command.Username);
         await this.updateTransactionState();
 
         response.status = ResponseCode.SUCCESS;
@@ -60,24 +57,7 @@ export class ConfirmTransactionHandler implements ICommandHandler<ConfirmTransac
             TransactionCode: command.TransactionCode
         });
 
-        const lastDecision = await this.transactionDecisionRepository.findBy({
-            TransactionId: transaction!.Id,
-            Version: version
-        });
-
-        if (lastDecision.some(decision => decision.Username === command.Username))
-            return [false, 'Ya has enviado una oferta para esta transacción.'];
-
         return [true, 'Ok.'];
-    }
-
-    private async createTransactionDecision(username: string): Promise<void> {
-        const transactionDecision = new TransactionDecisionEntity();
-        transactionDecision.Username = username;
-        transactionDecision.TransactionId = transaction!.Id;
-        transactionDecision.Version = version;
-
-        await this.transactionDecisionRepository.save(transactionDecision);
     }
 
     private async updateTransactionState(): Promise<void> {

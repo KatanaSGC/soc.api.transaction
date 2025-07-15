@@ -5,8 +5,11 @@ export class TransactionPaymentEntity {
     @PrimaryGeneratedColumn()
     Id: number;
 
-    @Column({ type: 'int', nullable: false })
-    TransactionId: number;    
+    @Column({ type: 'decimal', nullable: false })
+    Amount: number;
+
+    @Column({ type: 'varchar', nullable: false })
+    TransactionCode: string;    
     
     @Column({ type: 'varchar', length: 32, nullable: false })
     TransactionUnlockCode: string;
