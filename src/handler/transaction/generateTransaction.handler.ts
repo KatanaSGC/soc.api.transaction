@@ -31,7 +31,12 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         @InjectRepository(TransactionStateEntity)
         private readonly transactionStateRepository: Repository<TransactionStateEntity>,
         private readonly commandBus: CommandBus
-    ) { }
+    ) {
+        shoppingCartDetails = [];
+        transactionState = null;
+        totalAmount = 0;
+        latestCart = null;
+     }
 
     async execute(command: GenerateTransactionCommand): Promise<ApiResponse<PaymentLinkDto>> {
         const response = new ApiResponse<PaymentLinkDto>();
@@ -84,8 +89,13 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
             return response;
         }
 
-        latestCart!.IsOpen = false;
-        await this.shoppingCartRepository.save(latestCart!);
+        const newShoppingCart = new ShoppingCartEntity();
+        newShoppingCart.BuyerProfileId = findUser.Id;
+        newShoppingCart.ShoppingCartCode = latestCart!.ShoppingCartCode;
+        newShoppingCart.Amount = latestCart!.Amount;
+        newShoppingCart.IsOpen = false;
+
+        await this.shoppingCartRepository.save(newShoppingCart!);
 
         response.status = ResponseCode.SUCCESS;
         response.data.PaymentUrl = paymentResponse.data.paymentUrl;
@@ -107,8 +117,7 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
             const filterProducts = findSellerItems.filter(product => product.ProductId === item);
             const product = findSellerItems.find(product => product.ProductId === item);
             const totalUnits = filterProducts.reduce((sum, product) => sum + product.Units, 0);
-            const amount = totalUnits * (product?.Amount || 0);
-            totalAmount += amount;
+            const amount = totalUnits * (product?.Amount || 0);            
             sellerAmount += amount;
         });
 
@@ -119,6 +128,8 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         createTransaction.TransactionStateId = transactionState!.Id;
         createTransaction.IsBuyTransaction = false;
         createTransaction.ShoppingCartCode = latestCart!.ShoppingCartCode;
+
+        totalAmount += sellerAmount;
 
         await this.transactionRepository.save(createTransaction);
     }
