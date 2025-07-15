@@ -146,7 +146,7 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         if (!latestCart)
             return [false, "No se encontro ningún carrito de compras abierto."];
 
-        if (!latestCart.IsOpen)
+        if (latestCart.IsOpen === false)
             return [false, "El carrito de compras ya está cerrado."];
 
         const shoppingCarts = await this.shoppingCartRepository.findBy({ ShoppingCartCode: latestCart.ShoppingCartCode });
