@@ -5,6 +5,7 @@ import { GenerateTransactionCommand } from 'src/command/transaction/generateTran
 import { UpdateTransactionCommand } from 'src/command/transaction/updateTransaction.command';
 import { ApiResponse } from 'src/common/response/apiResponse.dto';
 import { PaymentLinkDto } from 'src/common/transaction/paymentLink.dto';
+import { TransactionDetailDto } from 'src/common/transaction/transactionDetail.dto';
 import { TransactionDetailView } from 'src/entities/transactionDetailView.entity';
 import { FindAllTransactionQuery } from 'src/query/transaction/findAllTransaction.query';
 
@@ -26,7 +27,7 @@ export class TransactionController {
   }
 
   @Get('/find-all-transaction')
-  async findAllTransaction(@Query('username') username: string) : Promise<ApiResponse<TransactionDetailView[]>> {
+  async findAllTransaction(@Query('username') username: string) : Promise<ApiResponse<TransactionDetailDto[]>> {
     return await this.queryBus.execute(new FindAllTransactionQuery(username));
   }
 

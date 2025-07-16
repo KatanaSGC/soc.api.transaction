@@ -14,14 +14,8 @@ export class TransactionDetailView {
     @Column({ type: 'varchar' })
     TransactionCode: string;    
 
-    @Column({ type: 'varchar' })
-    ProductDescription: string;    
-    
-    @Column({ type: 'int' })
-    ProductUnits: number;
-
     @Column({ type: 'decimal' })
-    AmountOffered: number;
+    Amount: number;
 
     @Column({ type: 'varchar' })
     BuyerNames: string;
