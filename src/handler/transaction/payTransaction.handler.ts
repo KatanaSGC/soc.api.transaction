@@ -95,9 +95,11 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
 
         buyTransaction!.Id = 0;
         buyTransaction!.TransactionStateId = findTransactionStatePayment!.Id;
+        buyTransaction!.CreatedAt = undefined as any;;
 
         sellTransaction!.Id = 0;
         sellTransaction!.TransactionStateId = findTransactionStatePayment!.Id;
+        sellTransaction!.CreatedAt = undefined as any;;
 
         await this.transactionRepository.save(buyTransaction!);
         await this.transactionRepository.save(sellTransaction!);
