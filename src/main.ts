@@ -17,6 +17,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
 
-  await app.listen(3003);
+  await app.listen(3000);
 }
 bootstrap();
