@@ -105,8 +105,11 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 transactionDetail.TransactionState = transactionStates.find(state => state.Id === transaction.TransactionStateId)?.Description || '';
                 transactionDetail.TransactionStateCode = transactionStates
                     .find(state => state.Id === transaction.TransactionStateId)?.TransactionStateCode || '';
-                transactionDetail.PaymentLink = findAllTransactionPayments
+                
+                if(transactionDetail.TransactionStateCode === 'TS-01') {
+                    transactionDetail.PaymentLink = findAllTransactionPayments
                     .find(payment => payment.TransactionCode === transaction.TransactionCode)?.PaymentUrl || '';
+                }
 
                 transactionDetail.BuyerNames = findBuyerProfile!.Names;
                 transactionDetail.BuyerSurnames = findBuyerProfile!.Surnames;
