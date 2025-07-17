@@ -97,8 +97,7 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 const findBuyerProfile = findProfiles.find(p => p.Identify === findBuyTransaction!.Username);  
                 const findSellerProfile = findProfiles.find(p => p.Identify === findSellTransaction!.Username);
                 
-                const transactionDetail = new TransactionDetailDto();
-                transactionDetail.BuyerUsername = transaction.Username;     
+                const transactionDetail = new TransactionDetailDto();                
                 transactionDetail.SellerUsername = findSellTransaction ? findSellTransaction.Username : '';
                 transactionDetail.TransactionCode = transaction.TransactionCode;
                 transactionDetail.Amount = Number(transaction.Amount);;
@@ -117,6 +116,7 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 }
 
 
+                transactionDetail.BuyerUsername = findBuyerProfile!.Identify;     
                 transactionDetail.BuyerNames = findBuyerProfile!.Names;
                 transactionDetail.BuyerSurnames = findBuyerProfile!.Surnames;
                 transactionDetail.BuyerEmail = findBuyerProfile!.Email;
