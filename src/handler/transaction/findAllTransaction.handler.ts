@@ -110,6 +110,10 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                     transactionDetail.PaymentLink = findAllTransactionPayments
                     .find(payment => payment.TransactionCode === transaction.TransactionCode)?.PaymentUrl || '';
                 }
+                else {
+                    transactionDetail.PaymentLink = '';
+                }
+
 
                 transactionDetail.BuyerNames = findBuyerProfile!.Names;
                 transactionDetail.BuyerSurnames = findBuyerProfile!.Surnames;
