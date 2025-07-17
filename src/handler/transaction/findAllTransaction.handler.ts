@@ -12,7 +12,7 @@ import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { FindAllTransactionQuery } from "src/query/transaction/findAllTransaction.query";
 import { In, Repository } from "typeorm";
 
-const transactionStateCodes = ['TS-01', 'TS-02', 'TS-03'];
+const transactionStateCodes = ['TS-01', 'TS-02'];
 
 @QueryHandler(FindAllTransactionQuery)
 export class FindAllTransactionHandler implements IQueryHandler<FindAllTransactionQuery> {
