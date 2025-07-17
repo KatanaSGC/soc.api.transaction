@@ -23,7 +23,7 @@ export class TransactionEntity {
     @Column({ type: 'boolean' })
     IsBuyTransaction: boolean;
     
-    @Column({ type: 'date', nullable: false })
+    @Column({ type: 'datetime', nullable: false })
     CreatedAt: Date;
 
     @Column({ type: 'boolean', default: true })

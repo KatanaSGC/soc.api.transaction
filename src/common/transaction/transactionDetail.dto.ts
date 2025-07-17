@@ -14,5 +14,5 @@ export class TransactionDetailDto {
     TransactionState: string;   
     TransactionStateCode: string;       
     PaymentLink: string;
-    CreatedAt: string;
+    CreatedAt: Date;
 }
