@@ -11,5 +11,6 @@ export class TransactionDetailDto {
     SellerSurnames: string;
     SellerEmail: string;
     SellerPhone: string;      
-    TransactionState: string;          
+    TransactionState: string;   
+    TransactionStateCode: string;       
 }
