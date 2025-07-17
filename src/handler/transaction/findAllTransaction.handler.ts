@@ -92,7 +92,7 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 transactionDetail.BuyerUsername = transaction.Username;     
                 transactionDetail.SellerUsername = findSellTransaction ? findSellTransaction.Username : '';
                 transactionDetail.TransactionCode = transaction.TransactionCode;
-                transactionDetail.Amount = transaction.Amount;
+                transactionDetail.Amount = Number(transaction.Amount);;
                 transactionDetail.TransactionState = transactionStates.find(state => state.Id === transaction.TransactionStateId)?.TransactionStateCode || '';
 
 

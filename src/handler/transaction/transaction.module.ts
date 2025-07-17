@@ -16,6 +16,10 @@ import { ProfileProductPriceEntity } from "src/entities/profileProductPrice.enti
 import { GenerateTransactionHandler } from "./generateTransaction.handler";
 import { ShoppingCartEntity } from "src/entities/shoppingCart.entity";
 import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailView.entity";
+import { PayTransactionHandler } from "./payTransaction.handler";
+import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentState.entity";
+import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
+import { StripeService } from "src/services/stripe.service";
 
 @Module({
     imports: [
@@ -25,8 +29,10 @@ import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailVie
             TransactionStateEntity,
             TransactionDecisionEntity,
             TransactionDetailView,
+            TransactionPaymentEntity,
             ShoppingCartEntity,
-            ShoppingCartDetailViewEntity
+            ShoppingCartDetailViewEntity,
+            TransactionPaymentStateEntity
         ]),
         TypeOrmModule.forFeature([
             ProfileEntity
@@ -41,13 +47,17 @@ import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailVie
         CreateTransactionHandler,
         UpdateTransactionHandler,
         FindAllTransactionHandler,
-        GenerateTransactionHandler
+        GenerateTransactionHandler,
+        PayTransactionHandler,
+        StripeService
     ],
     exports: [
         CreateTransactionHandler,
         UpdateTransactionHandler,
         FindAllTransactionHandler,
-        GenerateTransactionHandler
+        GenerateTransactionHandler,
+        PayTransactionHandler,
+        StripeService
     ]
 })
 export class TransactionModule { }

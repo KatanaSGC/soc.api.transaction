@@ -7,6 +7,7 @@ import { ResponseCode } from "src/common/response/responseCode";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentState.entity";
+import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { StripeService } from "src/services/stripe.service";
 import { Repository } from "typeorm";
 
@@ -16,6 +17,8 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
         private readonly stripeService: StripeService,
         @InjectRepository(TransactionEntity)
         private readonly transactionRepository: Repository<TransactionEntity>,
+        @InjectRepository(TransactionStateEntity)
+        private readonly transactionStateRepository: Repository<TransactionStateEntity>,
         @InjectRepository(TransactionPaymentEntity)
         private readonly transactionPaymentRepository: Repository<TransactionPaymentEntity>,
         @InjectRepository(TransactionPaymentStateEntity)
@@ -36,7 +39,7 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
         }        
 
         const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-            //TransactionId: findTransaction.Id,            
+            TransactionCode: command.TransactionCode      
         });
         if (!findTransactionPayment) {
             response.data = false;
@@ -53,8 +56,15 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
             return response;
         }
 
+        if(result.status !== 'completed') {
+            response.data = false;
+            response.message = "El pago no se ha completado correctamente.";
+            response.status = ResponseCode.ERROR;
+            return response;
+        }
+
         const findTransactionPaymentState = await this.transactionPaymentStateRepository.findOneBy({
-            Id: findTransactionPayment.Id,        
+            Id: findTransactionPayment.TransactionPaymentStateId,        
         });
         if(findTransactionPaymentState!.TransactionPaymentStateCode !== 'TPS-01') {
             response.data = false;
@@ -71,6 +81,26 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
         findTransactionPayment.StripePaymentIntentId = result.paymentIntentId || '';   
         
         await this.transactionPaymentRepository.save(findTransactionPayment);
+
+        const findFlowTransaction = await this.transactionRepository.findBy({
+            TransactionCode: findTransaction.TransactionCode
+        });
+
+        const findTransactionStatePayment = await this.transactionStateRepository.findOneBy({
+            TransactionStateCode: 'TS-02'
+        });
+
+        const buyTransaction = findFlowTransaction.find(t => t.IsBuyTransaction === true);
+        const sellTransaction = findFlowTransaction.find(t => t.IsBuyTransaction === false);
+
+        buyTransaction!.Id = 0;
+        buyTransaction!.TransactionStateId = findTransactionStatePayment!.Id;
+
+        sellTransaction!.Id = 0;
+        sellTransaction!.TransactionStateId = findTransactionStatePayment!.Id;
+
+        await this.transactionRepository.save(buyTransaction!);
+        await this.transactionRepository.save(sellTransaction!);
         
         response.data = true;
         response.message = "Transaccion pagada.";

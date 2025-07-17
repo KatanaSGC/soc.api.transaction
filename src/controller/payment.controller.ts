@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Headers, HttpCode, HttpStatus, Param, Get } from '@nestjs/common';
+import { Body, Controller, Post, Headers, HttpCode, HttpStatus, Param, Get, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GeneratePaymentCommand } from 'src/command/transactionPayment/generatePayment.command';
 import { UpdatePaymentStatusCommand } from 'src/command/transactionPayment/updatePaymentStatus.command';
@@ -6,6 +6,7 @@ import { GetPaymentStatusQuery } from 'src/query/transactionPayment/getPaymentSt
 import { StripeService } from 'src/services/stripe.service';
 import { ApiResponse } from 'src/common/response/apiResponse.dto';
 import { ResponseCode } from 'src/common/response/responseCode';
+import { PayTransactionCommand } from 'src/command/transaction/payTransaction.command';
 
 @Controller('transactions/payment')
 export class PaymentController {
@@ -14,6 +15,11 @@ export class PaymentController {
         private readonly queryBus: QueryBus,
         private readonly stripeService: StripeService,
     ) {}
+
+    @Get('success')
+    async successfulPayment(@Query("transaction") transaction: string): Promise<ApiResponse<boolean>> {
+        return await this.commandBus.execute(new PayTransactionCommand(transaction));
+    }
 
     @Post('generate')
     @HttpCode(HttpStatus.CREATED)

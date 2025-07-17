@@ -5,6 +5,9 @@ export class PayTransactionCommand
     @IsNotEmpty()
     TransactionCode: string;    
 
-    @IsNotEmpty()
-    TransactionSecurityCode: string;
+    constructor(
+        transactionCode: string,
+    ) {
+        this.TransactionCode = transactionCode;
+    }
 }
