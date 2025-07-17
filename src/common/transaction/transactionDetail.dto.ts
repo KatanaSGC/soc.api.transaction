@@ -16,4 +16,5 @@ export class TransactionDetailDto {
     PaymentLink: string;
     CreatedAt: Date;
     ShoppingCartCode: string;
+    TransactionUnlockCode: string;
 }

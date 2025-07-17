@@ -106,9 +106,11 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 transactionDetail.TransactionStateCode = transactionStates
                     .find(state => state.Id === transaction.TransactionStateId)?.TransactionStateCode || '';
                 
+                const payment = findAllTransactionPayments
+                    .find(payment => payment.TransactionCode === transaction.TransactionCode)
+                
                 if(transactionDetail.TransactionStateCode === 'TS-01') {
-                    transactionDetail.PaymentLink = findAllTransactionPayments
-                    .find(payment => payment.TransactionCode === transaction.TransactionCode)?.PaymentUrl || '';
+                    transactionDetail.PaymentLink = payment?.PaymentUrl || '';
                 }
                 else {
                     transactionDetail.PaymentLink = '';
@@ -126,6 +128,7 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 transactionDetail.SellerPhone = findSellerProfile!.Phone!;
                 transactionDetail.CreatedAt = transaction.CreatedAt;    
                 transactionDetail.ShoppingCartCode = transaction.ShoppingCartCode;
+                transactionDetail.TransactionUnlockCode = payment?.TransactionUnlockCode || '';
                 
                 transactionDetailViews.push(transactionDetail);
             })
