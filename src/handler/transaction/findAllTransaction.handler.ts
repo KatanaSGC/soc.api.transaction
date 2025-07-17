@@ -7,6 +7,7 @@ import { TransactionDetailDto } from "src/common/transaction/transactionDetail.d
 import { ProfileEntity } from "src/entities/profile.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionDetailView } from "src/entities/transactionDetailView.entity";
+import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { FindAllTransactionQuery } from "src/query/transaction/findAllTransaction.query";
 import { In, Repository } from "typeorm";
@@ -22,7 +23,9 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
         @InjectRepository(ProfileEntity, 'profiles')
         private readonly profileRepository: Repository<ProfileEntity>,
         @InjectRepository(TransactionStateEntity)
-        private readonly transactionStateRepository: Repository<TransactionStateEntity>
+        private readonly transactionStateRepository: Repository<TransactionStateEntity>,
+        @InjectRepository(TransactionPaymentEntity)
+        private readonly transactionPaymentRepository: Repository<TransactionPaymentEntity>
     ) { }
 
     async execute(query: FindAllTransactionQuery): Promise<ApiResponse<TransactionDetailDto[]>> {
@@ -74,6 +77,12 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 }
             });
 
+            const findAllTransactionPayments = await this.transactionPaymentRepository.find({
+                where: {
+                    TransactionCode: In(transactionsCodes)
+                }
+            });
+
             const transactionDetailViews: TransactionDetailDto[] = [];
 
             findTransactions.forEach(transaction => {
@@ -94,8 +103,10 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 transactionDetail.TransactionCode = transaction.TransactionCode;
                 transactionDetail.Amount = Number(transaction.Amount);;
                 transactionDetail.TransactionState = transactionStates.find(state => state.Id === transaction.TransactionStateId)?.Description || '';
-                transactionDetail.TransactionStateCode = transactionStates.find(state => state.Id === transaction.TransactionStateId)?.TransactionStateCode || '';
-
+                transactionDetail.TransactionStateCode = transactionStates
+                    .find(state => state.Id === transaction.TransactionStateId)?.TransactionStateCode || '';
+                transactionDetail.PaymentLink = findAllTransactionPayments
+                    .find(payment => payment.TransactionCode === transaction.TransactionCode)?.PaymentUrl || '';
 
                 transactionDetail.BuyerNames = findBuyerProfile!.Names;
                 transactionDetail.BuyerSurnames = findBuyerProfile!.Surnames;

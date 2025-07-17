@@ -13,4 +13,5 @@ export class TransactionDetailDto {
     SellerPhone: string;      
     TransactionState: string;   
     TransactionStateCode: string;       
+    PaymentLink: string;
 }
