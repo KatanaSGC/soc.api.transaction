@@ -125,6 +125,7 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
                 transactionDetail.SellerEmail = findSellerProfile!.Email;
                 transactionDetail.SellerPhone = findSellerProfile!.Phone!;
                 transactionDetail.CreatedAt = transaction.CreatedAt;    
+                transactionDetail.ShoppingCartCode = transaction.ShoppingCartCode;
                 
                 transactionDetailViews.push(transactionDetail);
             })
