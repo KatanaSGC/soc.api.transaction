@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CompleteTransactionCommand } from 'src/command/transaction/completeTransaction.comand';
 import { CreateTransactionCommand } from 'src/command/transaction/createTransaction.command';
 import { GenerateTransactionCommand } from 'src/command/transaction/generateTransaction.command';
 import { UpdateTransactionCommand } from 'src/command/transaction/updateTransaction.command';
@@ -33,6 +34,11 @@ export class TransactionController {
 
   @Post('/generate-transaction')
   async generateTransaction(@Body() command: GenerateTransactionCommand): Promise<ApiResponse<PaymentLinkDto>> {
+    return await this.commandBus.execute(command);
+  }
+
+  @Put('/complete-transaction')
+  async completeTransaction(@Body() command: CompleteTransactionCommand): Promise<ApiResponse<boolean>> {
     return await this.commandBus.execute(command);
   }
 }

@@ -20,6 +20,7 @@ import { PayTransactionHandler } from "./payTransaction.handler";
 import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentState.entity";
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { StripeService } from "src/services/stripe.service";
+import { CompleteTransactionHandler } from "./completeTransaction.handler";
 
 @Module({
     imports: [
@@ -49,7 +50,8 @@ import { StripeService } from "src/services/stripe.service";
         FindAllTransactionHandler,
         GenerateTransactionHandler,
         PayTransactionHandler,
-        StripeService
+        StripeService,
+        CompleteTransactionHandler
     ],
     exports: [
         CreateTransactionHandler,
@@ -57,7 +59,8 @@ import { StripeService } from "src/services/stripe.service";
         FindAllTransactionHandler,
         GenerateTransactionHandler,
         PayTransactionHandler,
-        StripeService
+        StripeService,
+        CompleteTransactionHandler
     ]
 })
 export class TransactionModule { }
