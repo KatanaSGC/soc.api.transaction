@@ -18,15 +18,20 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
         private readonly transactionPaymentRepository: Repository<TransactionPaymentEntity>,
         @InjectRepository(TransactionStateEntity)
         private readonly transactionStateRepository: Repository<TransactionStateEntity>,
-        @InjectRepository(TransactionPaymentStateEntity)        
+        @InjectRepository(TransactionPaymentStateEntity)
         private readonly transactionPaymentStateRepository: Repository<TransactionPaymentStateEntity>
-    ) {}
+    ) { }
 
     async execute(command: CompleteTransactionCommand): Promise<ApiResponse<boolean>> {
         const response = new ApiResponse<boolean>();
 
-        const findTransaction = await this.transactionRepository.findOneBy({
-            TransactionCode: command.TransactionCode
+        const findTransaction = await this.transactionRepository.findOne({
+            where: {
+                TransactionCode: command.TransactionCode
+            },
+            order: {
+                CreatedAt: "DESC"
+            }
         });
         if (!findTransaction) {
             response.status = ResponseCode.ERROR;
@@ -37,7 +42,7 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
 
         const findTransactionState = await this.transactionStateRepository.findOneBy({
             TransactionStateCode: 'TS-02'
-        });    
+        });
 
         if (findTransaction.TransactionStateId !== findTransactionState?.Id) {
             response.status = ResponseCode.ERROR;
@@ -54,13 +59,13 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
                 CreatedAt: "DESC"
             }
         });
-        if(!findTransactionPayment) {
+        if (!findTransactionPayment) {
             response.status = ResponseCode.ERROR;
             response.message = "No se encontro información de pago para la transacción.";
-            response.data = null;   
+            response.data = null;
         }
 
-        if(findTransactionPayment!.TransactionUnlockCode !== command.TransactionUnlockCode) {
+        if (findTransactionPayment!.TransactionUnlockCode !== command.TransactionUnlockCode) {
             response.status = ResponseCode.ERROR;
             response.message = "El código de desbloqueo de la transacción no es correcto.";
             response.data = null;
