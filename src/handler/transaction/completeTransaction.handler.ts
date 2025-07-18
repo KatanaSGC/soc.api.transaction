@@ -79,19 +79,21 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
         });
 
         const sellTransaction = findTransaction;
-        const buyTransaction = findTransaction;
 
-        sellTransaction.TransactionStateId = 0;
-        buyTransaction.TransactionStateId = 0;
-        sellTransaction.IsBuyTransaction = false;
-        buyTransaction.IsBuyTransaction = true;
+        sellTransaction.Id = 0;
         sellTransaction.CreatedAt = new Date();
-        buyTransaction.CreatedAt = new Date();
-
         sellTransaction.TransactionStateId = nextTransactionState!.Id;
-        buyTransaction.TransactionStateId = nextTransactionState!.Id;
+        sellTransaction.IsBuyTransaction = false;
 
         await this.transactionRepository.save(sellTransaction);
+
+        const buyTransaction = findTransaction;
+
+        buyTransaction.Id = 0;
+        buyTransaction.IsBuyTransaction = true;
+        buyTransaction.CreatedAt = new Date();
+        buyTransaction.TransactionStateId = nextTransactionState!.Id;
+
         await this.transactionRepository.save(buyTransaction);
 
         response.status = ResponseCode.SUCCESS;

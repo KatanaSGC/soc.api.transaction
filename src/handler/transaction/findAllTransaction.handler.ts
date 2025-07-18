@@ -6,13 +6,12 @@ import { ResponseCode } from "src/common/response/responseCode";
 import { TransactionDetailDto } from "src/common/transaction/transactionDetail.dto";
 import { ProfileEntity } from "src/entities/profile.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
-import { TransactionDetailView } from "src/entities/transactionDetailView.entity";
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { FindAllTransactionQuery } from "src/query/transaction/findAllTransaction.query";
 import { In, Repository } from "typeorm";
 
-const transactionStateCodes = ['TS-01', 'TS-02'];
+const transactionStateCodes = ['TS-01', 'TS-02', 'TS-03'];
 
 @QueryHandler(FindAllTransactionQuery)
 export class FindAllTransactionHandler implements IQueryHandler<FindAllTransactionQuery> {
@@ -86,6 +85,18 @@ export class FindAllTransactionHandler implements IQueryHandler<FindAllTransacti
             const transactionDetailViews: TransactionDetailDto[] = [];
 
             findTransactions.forEach(transaction => {
+                const findCloseState = transactionStates
+                    .find(state => state.TransactionStateCode === 'TS-03');
+
+
+                const findLastTransaction = findAllTransactions
+                    .find(t => t.TransactionCode === transaction.TransactionCode 
+                        && t.TransactionStateId === findCloseState?.Id);
+
+                if(findLastTransaction) {
+                    return;
+                }
+
                 const findSellTransaction = findAllTransactions
                     .find(t => t.TransactionCode === transaction.TransactionCode 
                         && t.IsBuyTransaction === false);
