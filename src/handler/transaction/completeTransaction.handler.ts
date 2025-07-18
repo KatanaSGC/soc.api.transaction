@@ -102,14 +102,14 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
 
         this.mailService.sendEmail(
             findProfile!.Email,
-            "Transacción Completada",
+            "Transacción Completada " + findProfile?.Identify,
             `La transacción ${buyTransaction!.TransactionCode} ha sido completada exitosamente.`,
             `<p>La transacción <strong>${buyTransaction!.TransactionCode}</strong> ha sido completada exitosamente.</p> <p>Se ha iniciado el proceso de pago.</p> <p>Gracias por utilizar nuestros servicios.</p> `,
         );
 
         this.mailService.sendEmail(
             process.env.EMAIL_ADMIN!,
-            "Transacción Completada",
+            "Transacción Completada"+ findProfile?.Identify,
             `La transacción ${buyTransaction!.TransactionCode} ha sido completada exitosamente.`,
             `<p>La transacción <strong>${buyTransaction!.TransactionCode}</strong> ha sido completada exitosamente.</p> <p>Se ha iniciado el proceso de pago.</p> <p>Gracias por utilizar nuestros servicios.</p> `,
         );
