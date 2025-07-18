@@ -1,12 +1,15 @@
+import { Inject } from "@nestjs/common";
 import { Command, CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CompleteTransactionCommand } from "src/command/transaction/completeTransaction.comand";
 import { ApiResponse } from "src/common/response/apiResponse.dto";
 import { ResponseCode } from "src/common/response/responseCode";
+import { ProfileEntity } from "src/entities/profile.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentState.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
+import { MailService } from "src/services/mailer/mail.service";
 import { In, Repository } from "typeorm";
 
 @CommandHandler(CompleteTransactionCommand)
@@ -19,32 +22,27 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
         @InjectRepository(TransactionStateEntity)
         private readonly transactionStateRepository: Repository<TransactionStateEntity>,
         @InjectRepository(TransactionPaymentStateEntity)
-        private readonly transactionPaymentStateRepository: Repository<TransactionPaymentStateEntity>
+        private readonly transactionPaymentStateRepository: Repository<TransactionPaymentStateEntity>,
+        @InjectRepository(ProfileEntity, 'profiles')
+        private readonly profileRepository: Repository<ProfileEntity>,
+        @Inject(MailService) private readonly mailService: MailService,
     ) { }
 
     async execute(command: CompleteTransactionCommand): Promise<ApiResponse<boolean>> {
         const response = new ApiResponse<boolean>();
 
-        const findTransaction = await this.transactionRepository.findOne({
-            where: {
-                TransactionCode: command.TransactionCode
-            },
-            order: {
-                CreatedAt: "DESC"
-            }
-        });
-        if (!findTransaction) {
-            response.status = ResponseCode.ERROR;
-            response.message = "Transacción no encontrada.";
-            response.data = null;
-            return response;
-        }
-
         const findTransactionState = await this.transactionStateRepository.findOneBy({
             TransactionStateCode: 'TS-02'
         });
 
-        if (findTransaction.TransactionStateId !== findTransactionState?.Id) {
+        const findTransactions = await this.transactionRepository.find({
+            where: {
+                TransactionCode: command.TransactionCode,
+                TransactionStateId: findTransactionState?.Id
+            }
+        });
+
+        if (findTransactions.length === 0) {
             response.status = ResponseCode.ERROR;
             response.message = "La transacción no se encuentra en estado pendiente.";
             response.data = null;
@@ -78,23 +76,43 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
             }
         });
 
-        const sellTransaction = findTransaction;
+        const findTransactionSeller = findTransactions.find(t => t.IsBuyTransaction === false);
 
-        sellTransaction.Id = 0;
-        sellTransaction.CreatedAt = new Date();
-        sellTransaction.TransactionStateId = nextTransactionState!.Id;
-        sellTransaction.IsBuyTransaction = false;
+        const sellTransaction = findTransactionSeller;
 
-        await this.transactionRepository.save(sellTransaction);
+        sellTransaction!.Id = 0;
+        sellTransaction!.CreatedAt = new Date();
+        sellTransaction!.TransactionStateId = nextTransactionState!.Id;
 
-        const buyTransaction = findTransaction;
+        await this.transactionRepository.save(sellTransaction!);
 
-        buyTransaction.Id = 0;
-        buyTransaction.IsBuyTransaction = true;
-        buyTransaction.CreatedAt = new Date();
-        buyTransaction.TransactionStateId = nextTransactionState!.Id;
+        const buyTransaction = findTransactions.find(t => t.IsBuyTransaction === true);
 
-        await this.transactionRepository.save(buyTransaction);
+        buyTransaction!.Id = 0;;
+        buyTransaction!.CreatedAt = new Date();
+        buyTransaction!.TransactionStateId = nextTransactionState!.Id;
+
+        await this.transactionRepository.save(buyTransaction!);
+
+        const findProfile = await this.profileRepository.findOne({
+            where: {
+                Identify: buyTransaction!.Username
+            }
+        });
+
+        this.mailService.sendEmail(
+            findProfile!.Email,
+            "Transacción Completada",
+            `La transacción ${buyTransaction!.TransactionCode} ha sido completada exitosamente.`,
+            `<p>La transacción <strong>${buyTransaction!.TransactionCode}</strong> ha sido completada exitosamente.</p> <p>Se ha iniciado el proceso de pago.</p> <p>Gracias por utilizar nuestros servicios.</p> `,
+        );
+
+        this.mailService.sendEmail(
+            process.env.EMAIL_ADMIN!,
+            "Transacción Completada",
+            `La transacción ${buyTransaction!.TransactionCode} ha sido completada exitosamente.`,
+            `<p>La transacción <strong>${buyTransaction!.TransactionCode}</strong> ha sido completada exitosamente.</p> <p>Se ha iniciado el proceso de pago.</p> <p>Gracias por utilizar nuestros servicios.</p> `,
+        );
 
         response.status = ResponseCode.SUCCESS;
         response.message = "Transacción completada correctamente.";

@@ -19,6 +19,12 @@ services:
       - MARIADB_NAME_PRODUCT=${MARIADB_NAME_PRODUCT}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - APP_URL=${APP_URL}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL=${EMAIL}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_ADMIN=${EMAIL_ADMIN}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "--version"]

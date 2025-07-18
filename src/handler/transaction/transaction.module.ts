@@ -21,6 +21,9 @@ import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentSt
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { StripeService } from "src/services/stripe.service";
 import { CompleteTransactionHandler } from "./completeTransaction.handler";
+import { MailServiceModule } from "src/services/mailer/mail.service.module";
+import { MailService } from "src/services/mailer/mail.service";
+import { MailerModule } from "@nestjs-modules/mailer";
 
 @Module({
     imports: [
@@ -33,7 +36,8 @@ import { CompleteTransactionHandler } from "./completeTransaction.handler";
             TransactionPaymentEntity,
             ShoppingCartEntity,
             ShoppingCartDetailViewEntity,
-            TransactionPaymentStateEntity
+            TransactionPaymentStateEntity,
+            MailServiceModule
         ]),
         TypeOrmModule.forFeature([
             ProfileEntity
@@ -43,6 +47,7 @@ import { CompleteTransactionHandler } from "./completeTransaction.handler";
             ProductEntity,
             ProfileProductPriceEntity
         ], 'products'),
+        MailServiceModule
     ],
     providers: [
         CreateTransactionHandler,
@@ -51,7 +56,7 @@ import { CompleteTransactionHandler } from "./completeTransaction.handler";
         GenerateTransactionHandler,
         PayTransactionHandler,
         StripeService,
-        CompleteTransactionHandler
+        CompleteTransactionHandler,
     ],
     exports: [
         CreateTransactionHandler,
@@ -60,7 +65,7 @@ import { CompleteTransactionHandler } from "./completeTransaction.handler";
         GenerateTransactionHandler,
         PayTransactionHandler,
         StripeService,
-        CompleteTransactionHandler
+        CompleteTransactionHandler,
     ]
 })
 export class TransactionModule { }
