@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .greeting {
+            font-size: 24px;
+            color: #007bff;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¡Hola Mundo!</h1>
+        <div class="greeting">
+            {{#if name}}
+                ¡Hola, {{name}}! 👋
+            {{else}}
+                ¡Hola, visitante! 👋
+            {{/if}}
+        </div>
+        <p>Bienvenido a nuestra aplicación NestJS</p>
+        <small>Fecha: {{date}}</small>
+    </div>
+</body>
+</html>
