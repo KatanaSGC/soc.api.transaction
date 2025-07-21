@@ -169,7 +169,7 @@ export class StripeService {
                     },
                 ],
                 mode: 'payment',
-                success_url: successUrl || `${this.configService.get<string>('APP_URL')}/payment/success?session_id={CHECKOUT_SESSION_ID}&transaction=${transactionCode}`,
+                success_url: successUrl || `${this.configService.get<string>('APP_URL')}/payment/success/${transactionCode}`,
                 cancel_url: cancelUrl || `${this.configService.get<string>('APP_URL')}/payment/cancel?transaction=${transactionCode}`,
                 metadata: {
                     transactionCode: transactionCode,

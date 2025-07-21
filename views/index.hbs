@@ -31,15 +31,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>¡Hola Mundo!</h1>
+        <img src="{{logo}}" alt="Logo" 
+        style="width: 300px; height: auto; margin-bottom: 20px;">
+        <h1>Pago realizado con éxito</h1>
         <div class="greeting">
-            {{#if name}}
-                ¡Hola, {{name}}! 👋
-            {{else}}
-                ¡Hola, visitante! 👋
-            {{/if}}
+            ¡Hola! 👋
         </div>
-        <p>Bienvenido a nuestra aplicación NestJS</p>
+        <p>Gracias por tu transacción.</p>
+        <p>Tu código de transacción es: <strong>{{transactionCode}}</strong></
+        <p>Puedes cerrar esta ventana.</p>
         <small>Fecha: {{date}}</small>
     </div>
 </body>

@@ -12,6 +12,10 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
 
+  app.useStaticAssets(join(__dirname, '..', 'views'), {
+    prefix: '/static/',
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -22,6 +26,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
 
-  await app.listen(3000);
+  await app.listen(3003);
 }
 bootstrap();
