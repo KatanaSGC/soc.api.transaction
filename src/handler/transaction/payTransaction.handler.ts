@@ -115,18 +115,28 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
             TransactionStateId: firstTransactionPaymentState?.Id
         });
 
+        console.log('findFlowTransaction', findFlowTransaction);
+
         const selectUsernames = [...new Set(findFlowTransaction.map(t => t.Username))];
 
+        console.log('selectUsernames', selectUsernames);
+
         const shoppingCart = findFlowTransaction[0].ShoppingCartCode;
+
+        console.log('shoppingCart', shoppingCart);
 
         const findShoppingCart = await this.shoppingCartRepository.findOneBy({
             ShoppingCartCode: shoppingCart
         });
 
+        console.log('findShoppingCart', findShoppingCart);
+
         var shoppingCartDetails: ShoppingCartDetailViewEntity[] = [];
         shoppingCartDetails = await this.shoppingCartDetailViewRepository.findBy({
             ShoppingCartId: findShoppingCart!.Id
         });
+
+        console.log('shoppingCartDetails', shoppingCartDetails);
 
         for (const username of selectUsernames) {
             const transactionSeller = findFlowTransaction.find(t => t.Username === username)
