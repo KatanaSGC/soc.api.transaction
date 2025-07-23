@@ -5,6 +5,7 @@ import { CompleteTransactionCommand } from "src/command/transaction/completeTran
 import { ApiResponse } from "src/common/response/apiResponse.dto";
 import { ResponseCode } from "src/common/response/responseCode";
 import { ProfileEntity } from "src/entities/profile.entity";
+import { ProfileProductEntity } from "src/entities/profileProduct.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentState.entity";
@@ -25,6 +26,8 @@ export class CompleteTransactionHandler implements ICommandHandler<CompleteTrans
         private readonly transactionPaymentStateRepository: Repository<TransactionPaymentStateEntity>,
         @InjectRepository(ProfileEntity, 'profiles')
         private readonly profileRepository: Repository<ProfileEntity>,
+        @InjectRepository(ProfileProductEntity, 'products')
+        private readonly profileProductRepository: Repository<ProfileProductEntity>,
         @Inject(MailService) private readonly mailService: MailService,
     ) { }
 
