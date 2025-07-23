@@ -10,7 +10,7 @@ import { ShoppingCartEntity } from "src/entities/shoppingCart.entity";
 import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailView.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
-import { In, Repository } from "typeorm";
+import { Repository } from "typeorm";
 
 let shoppingCartDetails: ShoppingCartDetailViewEntity[] = [];
 let transactionState: TransactionStateEntity | null = null;
@@ -36,7 +36,7 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         transactionState = null;
         totalAmount = 0;
         latestCart = null;
-     }
+    }
 
     async execute(command: GenerateTransactionCommand): Promise<ApiResponse<PaymentLinkDto>> {
         const response = new ApiResponse<PaymentLinkDto>();
@@ -117,7 +117,7 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
             const filterProducts = findSellerItems.filter(product => product.ProductId === item);
             const product = findSellerItems.find(product => product.ProductId === item);
             const totalUnits = filterProducts.reduce((sum, product) => sum + product.Units, 0);
-            const amount = totalUnits * (product?.Amount || 0);            
+            const amount = totalUnits * (product?.Amount || 0);
             sellerAmount += amount;
         });
 
@@ -128,9 +128,7 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         createTransaction.TransactionStateId = transactionState!.Id;
         createTransaction.IsBuyTransaction = false;
         createTransaction.ShoppingCartCode = latestCart!.ShoppingCartCode;
-
-        totalAmount = 0;
-
+        
         totalAmount += sellerAmount;
 
         await this.transactionRepository.save(createTransaction);
