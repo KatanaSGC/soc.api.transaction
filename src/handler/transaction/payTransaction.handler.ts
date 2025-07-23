@@ -16,7 +16,7 @@ import { Repository } from "typeorm";
 
 let transaction: TransactionEntity | null = null;
 let transactionPayment: TransactionPaymentEntity | null = null;
-let transactionPaymentState: TransactionPaymentStateEntity | null = null;
+let nextTransactionPaymentState: TransactionPaymentStateEntity | null = null;
 let firstTransactionPaymentState: TransactionPaymentStateEntity | null = null;
 let nextTransactionState: TransactionStateEntity | null = null;
 let checkPaymentStatus: {
@@ -61,7 +61,7 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
 
         await this.removeProductsFromInventoryAndCreateTransaction(command.TransactionCode);
 
-        transactionPayment!.TransactionPaymentStateId = transactionPaymentState!.Id;
+        transactionPayment!.TransactionPaymentStateId = nextTransactionPaymentState!.Id;
         transactionPayment!.StripePaymentIntentId = checkPaymentStatus!.paymentIntentId || '';
 
         await this.transactionPaymentRepository.save(transactionPayment!);
@@ -106,6 +106,10 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
             TransactionPaymentStateCode: 'TPS-01'
         });
 
+        nextTransactionPaymentState = await this.transactionPaymentStateRepository.findOneBy({
+            TransactionPaymentStateCode: 'TPS-02'
+        });
+
         return [true, 'Ok']
     }
 
@@ -141,6 +145,8 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
         for (const username of selectUsernames) {
             const transactionSeller = findFlowTransaction.find(t => t.Username === username)
 
+            console.log('transactionSeller', transactionSeller);
+
             transactionSeller!.Id = 0;
             transactionSeller!.TransactionStateId = nextTransactionState!.Id;
             transactionSeller!.CreatedAt = undefined as any;
@@ -155,7 +161,11 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
                 Identify: username
             });
 
+            console.log('findProfile', findProfile);
+
             const shoppingCartDetailsByUser = shoppingCartDetails.filter(scd => scd.ProfileId === findProfile?.Id);
+
+            console.log('shoppingCartDetailsByUser', shoppingCartDetailsByUser);
 
             for (const shoppingCartDetail of shoppingCartDetailsByUser) {
                 const removeProduct = new ProfileProductEntity();
