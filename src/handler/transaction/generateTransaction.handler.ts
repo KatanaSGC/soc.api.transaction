@@ -129,6 +129,8 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         createTransaction.IsBuyTransaction = false;
         createTransaction.ShoppingCartCode = latestCart!.ShoppingCartCode;
 
+        totalAmount = 0;
+
         totalAmount += sellerAmount;
 
         await this.transactionRepository.save(createTransaction);
@@ -151,7 +153,7 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
 
     private async findShoppingCartDetail(profileId: number): Promise<[boolean, string]> {
         latestCart = await this.shoppingCartRepository.findOne({
-            where: { BuyerProfileId: profileId },
+            where: { BuyerProfileId: profileId, IsOpen: true },
             order: { CreatedAt: 'DESC' },
         });
         if (!latestCart)
@@ -160,15 +162,8 @@ export class GenerateTransactionHandler implements ICommandHandler<GenerateTrans
         if (latestCart.IsOpen === false)
             return [false, "El carrito de compras ya está cerrado."];
 
-        const shoppingCarts = await this.shoppingCartRepository.findBy({ ShoppingCartCode: latestCart.ShoppingCartCode });
-        if (!shoppingCarts || shoppingCarts.length === 0)
-            return [false, "No se encontraron productos en el carrito de compras."];
-
-
-        const shoppingCartIds = shoppingCarts.map(cart => cart.Id);
-
         shoppingCartDetails = await this.shoppingCartDetailViewRepository.find({
-            where: { ShoppingCartId: In(shoppingCartIds) },
+            where: { ShoppingCartId: latestCart.Id },
             order: { ProductName: 'ASC' },
         });
         if (!shoppingCartDetails || shoppingCartDetails.length === 0)
