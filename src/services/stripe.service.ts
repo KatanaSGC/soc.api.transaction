@@ -45,7 +45,7 @@ export class StripeService {
                 after_completion: {
                     type: 'redirect',
                     redirect: {
-                        url: `${this.configService.get<string>('APP_URL')}/transaction/payment/success/${transactionCode}`,
+                        url: `${this.configService.get<string>('APP_URL')}/transactions/payment/success/${transactionCode}`,
                     },
                 },
             });
