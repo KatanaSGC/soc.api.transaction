@@ -142,49 +142,6 @@ export class StripeService {
         }
     }
 
-    async createCheckoutSession(
-        amount: number,
-        currency: string = 'usd',
-        description: string,
-        transactionCode: string,
-        successUrl?: string,
-        cancelUrl?: string
-    ): Promise<{ url: string; id: string }> {
-        try {
-            const session = await this.stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [
-                    {
-                        price_data: {
-                            currency: currency.toLowerCase(),
-                            product_data: {
-                                name: description,
-                                metadata: {
-                                    transactionCode: transactionCode,
-                                },
-                            },
-                            unit_amount: Math.round(amount * 100), // Stripe maneja centavos
-                        },
-                        quantity: 1,
-                    },
-                ],
-                mode: 'payment',
-                success_url: successUrl || `${this.configService.get<string>('APP_URL')}/payment/success/${transactionCode}`,
-                cancel_url: cancelUrl || `${this.configService.get<string>('APP_URL')}/payment/cancel?transaction=${transactionCode}`,
-                metadata: {
-                    transactionCode: transactionCode,
-                },
-            });
-
-            return {
-                url: session.url || '',
-                id: session.id,
-            };
-        } catch (error) {
-            throw new Error(`Error creating checkout session: ${error.message}`);
-        }
-    }
-
     async retrievePaymentLink(paymentLinkId: string): Promise<Stripe.PaymentLink> {
         return await this.stripe.paymentLinks.retrieve(paymentLinkId);
     }
