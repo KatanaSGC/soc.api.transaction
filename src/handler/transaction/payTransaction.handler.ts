@@ -1,15 +1,30 @@
-import { Inject } from "@nestjs/common";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PayTransactionCommand } from "src/command/transaction/payTransaction.command";
 import { ApiResponse } from "src/common/response/apiResponse.dto";
 import { ResponseCode } from "src/common/response/responseCode";
+import { ProfileEntity } from "src/entities/profile.entity";
+import { ProfileProductEntity } from "src/entities/profileProduct.entity";
+import { ShoppingCartEntity } from "src/entities/shoppingCart.entity";
+import { ShoppingCartDetailViewEntity } from "src/entities/shoppingCartDetailView.entity";
 import { TransactionEntity } from "src/entities/transaction.entity";
 import { TransactionPaymentEntity } from "src/entities/transactionPayment.entity";
 import { TransactionPaymentStateEntity } from "src/entities/transactionPaymentState.entity";
 import { TransactionStateEntity } from "src/entities/transactionState.entity";
 import { StripeService } from "src/services/stripe.service";
 import { Repository } from "typeorm";
+
+let transaction: TransactionEntity | null = null;
+let transactionPayment: TransactionPaymentEntity | null = null;
+let transactionPaymentState: TransactionPaymentStateEntity | null = null;
+let firstTransactionPaymentState: TransactionPaymentStateEntity | null = null;
+let nextTransactionState: TransactionStateEntity | null = null;
+let checkPaymentStatus: {
+    status: 'pending' | 'completed' | 'failed';
+    chargeId?: string;
+    paymentIntentId?: string;
+    sessionId?: string;
+} | null = null;
 
 @CommandHandler(PayTransactionCommand)
 export class PayTransactionHandler implements ICommandHandler<PayTransactionCommand> {
@@ -22,91 +37,126 @@ export class PayTransactionHandler implements ICommandHandler<PayTransactionComm
         @InjectRepository(TransactionPaymentEntity)
         private readonly transactionPaymentRepository: Repository<TransactionPaymentEntity>,
         @InjectRepository(TransactionPaymentStateEntity)
-        private readonly transactionPaymentStateRepository: Repository<TransactionPaymentStateEntity>,            
-    ) {}
+        private readonly transactionPaymentStateRepository: Repository<TransactionPaymentStateEntity>,
+        @InjectRepository(ShoppingCartEntity)
+        private readonly shoppingCartRepository: Repository<ShoppingCartEntity>,
+        @InjectRepository(ShoppingCartDetailViewEntity)
+        private readonly shoppingCartDetailViewRepository: Repository<ShoppingCartDetailViewEntity>,
+        @InjectRepository(ProfileEntity, 'profiles')
+        private readonly profileRepository: Repository<ProfileEntity>,
+        @InjectRepository(ProfileProductEntity, 'products')
+        private readonly profileProductRepository: Repository<ProfileProductEntity>,
+    ) { }
 
     async execute(command: PayTransactionCommand): Promise<ApiResponse<boolean>> {
         const response = new ApiResponse<boolean>();
 
-        const findTransaction = await this.transactionRepository.findOneBy( {
-            TransactionCode: command.TransactionCode
-        });
-        if(!findTransaction) {
+        const [isValid, message] = await this.validatePaymentAndLoadData(command.TransactionCode);
+        if (!isValid) {
             response.data = false;
-            response.message = "No se encontro la transaccion, verifique el codigo de transaccion.";
-            response.status = ResponseCode.ERROR;
-            return response;
-        }        
-
-        const findTransactionPayment = await this.transactionPaymentRepository.findOneBy({
-            TransactionCode: command.TransactionCode      
-        });
-        if (!findTransactionPayment) {
-            response.data = false;
-            response.message = "No se ha generado un pago para esta transaccion.";
+            response.message = message;
             response.status = ResponseCode.ERROR;
             return response;
         }
 
-        const result = await this.stripeService.checkPaymentStatus(findTransactionPayment.StripePaymentLinkId);
-        if (!result) {
-            response.data = false;
-            response.message = "El pago no se ha completado o no existe.";
-            response.status = ResponseCode.ERROR;
-            return response;
-        }
+        await this.removeProductsFromInventoryAndCreateTransaction(command.TransactionCode);
 
-        if(result.status !== 'completed') {
-            response.data = false;
-            response.message = "El pago no se ha completado correctamente.";
-            response.status = ResponseCode.ERROR;
-            return response;
-        }
+        transactionPayment!.TransactionPaymentStateId = transactionPaymentState!.Id;
+        transactionPayment!.StripePaymentIntentId = checkPaymentStatus!.paymentIntentId || '';
 
-        const findTransactionPaymentState = await this.transactionPaymentStateRepository.findOneBy({
-            Id: findTransactionPayment.TransactionPaymentStateId,        
-        });
-        if(findTransactionPaymentState!.TransactionPaymentStateCode !== 'TPS-01') {
-            response.data = false;
-            response.message = "La transaccion ya ha sido pagada.";
-            response.status = ResponseCode.ERROR;
-            return response;
-        }
+        await this.transactionPaymentRepository.save(transactionPayment!);
 
-        const findTransactionState = await this.transactionPaymentStateRepository.findOneBy({
-            TransactionPaymentStateCode: 'TPS-02'
-        });
-
-        findTransactionPayment.TransactionPaymentStateId = findTransactionState!.Id;     
-        findTransactionPayment.StripePaymentIntentId = result.paymentIntentId || '';   
-        
-        await this.transactionPaymentRepository.save(findTransactionPayment);
-
-        const findFlowTransaction = await this.transactionRepository.findBy({
-            TransactionCode: findTransaction.TransactionCode
-        });
-
-        const findTransactionStatePayment = await this.transactionStateRepository.findOneBy({
-            TransactionStateCode: 'TS-02'
-        });
-
-        const buyTransaction = findFlowTransaction.find(t => t.IsBuyTransaction === true);
-        const sellTransaction = findFlowTransaction.find(t => t.IsBuyTransaction === false);
-
-        buyTransaction!.Id = 0;
-        buyTransaction!.TransactionStateId = findTransactionStatePayment!.Id;
-        buyTransaction!.CreatedAt = undefined as any;;
-
-        sellTransaction!.Id = 0;
-        sellTransaction!.TransactionStateId = findTransactionStatePayment!.Id;
-        sellTransaction!.CreatedAt = undefined as any;;
-
-        await this.transactionRepository.save(buyTransaction!);
-        await this.transactionRepository.save(sellTransaction!);
-        
         response.data = true;
         response.message = "Transaccion pagada.";
         response.status = ResponseCode.SUCCESS;
         return response;
+    }
+
+    private async validatePaymentAndLoadData(transactionCode: string): Promise<[boolean, string]> {
+        transaction = await this.transactionRepository.findOneBy({
+            TransactionCode: transactionCode
+        });
+        if (!transaction)
+            return [true, 'No se encontro la transaccion, verifique el codigo de transaccion.']
+
+        transactionPayment = await this.transactionPaymentRepository.findOneBy({
+            TransactionCode: transactionCode
+        });
+        if (!transactionPayment)
+            return [true, 'No se ha generado un pago para esta transaccion.']
+
+        checkPaymentStatus = await this.stripeService.checkPaymentStatus(transactionPayment.StripePaymentLinkId);
+        if (!checkPaymentStatus)
+            return [true, 'El pago no se ha completado o no existe.']
+
+        if (checkPaymentStatus.status !== 'completed')
+            return [true, 'El pago no se ha completado correctamente.']
+
+        const findTransactionPaymentState = await this.transactionPaymentStateRepository.findOneBy({
+            Id: transactionPayment.TransactionPaymentStateId,
+        });
+        if (findTransactionPaymentState!.TransactionPaymentStateCode !== 'TPS-01')
+            return [true, 'La transaccion ya ha sido pagada.']
+
+        nextTransactionState = await this.transactionStateRepository.findOneBy({
+            TransactionStateCode: 'TS-02'
+        });
+
+        firstTransactionPaymentState = await this.transactionPaymentStateRepository.findOneBy({
+            TransactionPaymentStateCode: 'TPS-01'
+        });
+
+        return [true, 'Ok']
+    }
+
+    private async removeProductsFromInventoryAndCreateTransaction(transactionCode: string) {
+        const findFlowTransaction = await this.transactionRepository.findBy({
+            TransactionCode: transactionCode,
+            TransactionStateId: firstTransactionPaymentState?.Id
+        });
+
+        const selectUsernames = [...new Set(findFlowTransaction.map(t => t.Username))];
+
+        const shoppingCart = findFlowTransaction[0].ShoppingCartCode;
+
+        const findShoppingCart = await this.shoppingCartRepository.findOneBy({
+            ShoppingCartCode: shoppingCart
+        });
+
+        var shoppingCartDetails: ShoppingCartDetailViewEntity[] = [];
+        shoppingCartDetails = await this.shoppingCartDetailViewRepository.findBy({
+            ShoppingCartId: findShoppingCart!.Id
+        });
+
+        for (const username of selectUsernames) {
+            const transactionSeller = findFlowTransaction.find(t => t.Username === username)
+
+            transactionSeller!.Id = 0;
+            transactionSeller!.TransactionStateId = nextTransactionState!.Id;
+            transactionSeller!.CreatedAt = undefined as any;
+
+            await this.transactionRepository.save(transactionSeller!);
+
+            if (transactionSeller!.IsBuyTransaction === true) {
+                continue
+            }
+
+            const findProfile = await this.profileRepository.findOneBy({
+                Identify: username
+            });
+
+            const shoppingCartDetailsByUser = shoppingCartDetails.filter(scd => scd.ProfileId === findProfile?.Id);
+
+            for (const shoppingCartDetail of shoppingCartDetailsByUser) {
+                const removeProduct = new ProfileProductEntity();
+                removeProduct.ProfileId = findProfile?.Id || 0;
+                removeProduct.ProductId = shoppingCartDetail.ProductId;
+                removeProduct.UnitTypeId = shoppingCartDetail.UnitTypeId;
+                removeProduct.Units = -Math.abs(shoppingCartDetail.Units);
+
+                await this.profileProductRepository.save(removeProduct);
+            }
+
+        }
     }
 }
