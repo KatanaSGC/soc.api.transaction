@@ -11,6 +11,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TransactionController } from './controller/transaction.controller';
 import { ProfileStripeAccountController } from './controller/profileStripeAccount.controller';
 import { ProfileTransactionModule } from './handler/profilePayment/profilePayment.module';
+import { KeycloakServiceModule } from './services/keycloak/keycloak.service.module';
+import { KeycloakController } from './controller/keycloak.controller';
 
 @Module({
   imports: [
@@ -21,15 +23,17 @@ import { ProfileTransactionModule } from './handler/profilePayment/profilePaymen
     TransactionModule,
     TransactionPaymentModule,
     CqrsModule,
-    ProfileTransactionModule
+    ProfileTransactionModule,
+    KeycloakServiceModule,
   ],
   controllers: [
     AppController,
     AliveSignalController,
     TransactionController,
     PaymentController,
-    ProfileStripeAccountController
+    ProfileStripeAccountController,
+    KeycloakController,
   ],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,13 +1,12 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
-export class CreateProfileStripeAccountCommand 
-{
-    @IsNotEmpty()    
-    Identify: string;
+export class CreateProfileStripeAccountCommand {
+  @IsNotEmpty()
+  Identify: string;
 
-    @IsNotEmpty()
-    StripeEmail: string;
+  @IsNotEmpty()
+  StripeEmail: string;
 
-    @IsNotEmpty()
-    StripeName: string;
+  @IsNotEmpty()
+  StripeName: string;
 }

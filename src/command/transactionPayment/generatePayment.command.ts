@@ -1,9 +1,8 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
-export class GeneratePaymentCommand 
-{
-    @IsNotEmpty()
-    TransactionCode: string;
-    
-    Amount: number;
+export class GeneratePaymentCommand {
+  @IsNotEmpty()
+  TransactionCode: string;
+
+  Amount: number;
 }

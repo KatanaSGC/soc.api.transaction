@@ -14,31 +14,41 @@ import { FindAllTransactionQuery } from 'src/query/transaction/findAllTransactio
 export class TransactionController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Post('/create-transaction')
-  async createTransaction(@Body() command: CreateTransactionCommand) : Promise<ApiResponse<string>> {
+  async createTransaction(
+    @Body() command: CreateTransactionCommand,
+  ): Promise<ApiResponse<string>> {
     return await this.commandBus.execute(command);
   }
 
   @Put('/update-transaction')
-  async updateTransaction(@Body() command: UpdateTransactionCommand) : Promise<ApiResponse<boolean>> {
+  async updateTransaction(
+    @Body() command: UpdateTransactionCommand,
+  ): Promise<ApiResponse<boolean>> {
     return await this.commandBus.execute(command);
   }
 
   @Get('/find-all-transaction')
-  async findAllTransaction(@Query('username') username: string) : Promise<ApiResponse<TransactionDetailDto[]>> {
+  async findAllTransaction(
+    @Query('username') username: string,
+  ): Promise<ApiResponse<TransactionDetailDto[]>> {
     return await this.queryBus.execute(new FindAllTransactionQuery(username));
   }
 
   @Post('/generate-transaction')
-  async generateTransaction(@Body() command: GenerateTransactionCommand): Promise<ApiResponse<PaymentLinkDto>> {
+  async generateTransaction(
+    @Body() command: GenerateTransactionCommand,
+  ): Promise<ApiResponse<PaymentLinkDto>> {
     return await this.commandBus.execute(command);
   }
 
   @Put('/complete-transaction')
-  async completeTransaction(@Body() command: CompleteTransactionCommand): Promise<ApiResponse<boolean>> {
+  async completeTransaction(
+    @Body() command: CompleteTransactionCommand,
+  ): Promise<ApiResponse<boolean>> {
     return await this.commandBus.execute(command);
   }
 }

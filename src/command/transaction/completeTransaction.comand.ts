@@ -1,4 +1,4 @@
 export class CompleteTransactionCommand {
-    TransactionCode: string;
-    TransactionUnlockCode: string;
+  TransactionCode: string;
+  TransactionUnlockCode: string;
 }

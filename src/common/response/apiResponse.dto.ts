@@ -1,4 +1,4 @@
-import { ResponseCode } from "./responseCode";
+import { ResponseCode } from './responseCode';
 
 export class ApiResponse<T> {
   status: ResponseCode;
