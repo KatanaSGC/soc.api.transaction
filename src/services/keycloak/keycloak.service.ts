@@ -10,21 +10,45 @@ export class KeycloakService {
   private realm: string;
 
   constructor(private configService: ConfigService) {
-    this.realm = this.configService.get<string>('KEYCLOAK_REALM') || '';
+    const baseUrl = this.configService.get<string>('KEYCLOAK_BASE_URL');
+    const realm = this.configService.get<string>('KEYCLOAK_REALM');
+
+    if (!baseUrl || !realm) {
+      throw new Error(
+        'Keycloak configuration is incomplete. Please ensure KEYCLOAK_BASE_URL and KEYCLOAK_REALM are set in environment variables.',
+      );
+    }
+
+    this.realm = realm;
     this.kcAdminClient = new KcAdminClient({
-      baseUrl: this.configService.get<string>('KEYCLOAK_BASE_URL') || '',
+      baseUrl,
       realmName: this.realm,
     });
   }
 
   /**
    * Authenticate with Keycloak admin API
+   * 
+   * NOTE: This uses the admin-cli client with password grant type for simplicity.
+   * For production environments, consider:
+   * - Using client credentials flow with a dedicated service account
+   * - Implementing token caching with expiration handling to reduce authentication overhead
+   * - Using a more secure authentication method
    */
   private async authenticate(): Promise<void> {
     try {
+      const username = this.configService.get<string>('KEYCLOAK_ADMIN_USERNAME');
+      const password = this.configService.get<string>('KEYCLOAK_ADMIN_PASSWORD');
+
+      if (!username || !password) {
+        throw new Error(
+          'Keycloak admin credentials are missing. Please ensure KEYCLOAK_ADMIN_USERNAME and KEYCLOAK_ADMIN_PASSWORD are set.',
+        );
+      }
+
       await this.kcAdminClient.auth({
-        username: this.configService.get<string>('KEYCLOAK_ADMIN_USERNAME'),
-        password: this.configService.get<string>('KEYCLOAK_ADMIN_PASSWORD'),
+        username,
+        password,
         grantType: 'password',
         clientId: 'admin-cli',
       });

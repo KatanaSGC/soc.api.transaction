@@ -25,6 +25,15 @@ KEYCLOAK_ADMIN_PASSWORD=admin
 - `KEYCLOAK_ADMIN_USERNAME`: The admin username for Keycloak (typically `admin`)
 - `KEYCLOAK_ADMIN_PASSWORD`: The admin password for Keycloak
 
+### Security Considerations
+
+**Important:** The current implementation uses the `admin-cli` client with password grant type for simplicity. For production environments, consider:
+
+1. **Use Client Credentials Flow**: Instead of username/password authentication, use a dedicated service account with client credentials grant type
+2. **Implement Token Caching**: The service currently authenticates on every request. Implement token caching with proper expiration handling to reduce overhead
+3. **Least Privilege**: Create a dedicated Keycloak user/service account with minimal permissions needed for role retrieval
+4. **Secure Credential Storage**: Use secure credential management systems (e.g., HashiCorp Vault, AWS Secrets Manager) instead of environment variables in production
+
 ## API Endpoints
 
 ### 1. Get All Clients
