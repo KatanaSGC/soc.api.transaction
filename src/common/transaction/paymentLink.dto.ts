@@ -1,4 +1,4 @@
 export class PaymentLinkDto {
-    PaymentUrl: string;
-    PaymentId: string;
+  PaymentUrl: string;
+  PaymentId: string;
 }

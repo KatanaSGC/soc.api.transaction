@@ -1,7 +1,6 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
-export class ConfirmTransactionCommand
-{
-    @IsNotEmpty()
-    TransactionCode: string;
+export class ConfirmTransactionCommand {
+  @IsNotEmpty()
+  TransactionCode: string;
 }

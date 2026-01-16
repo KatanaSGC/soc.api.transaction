@@ -1,43 +1,44 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('TransactionPayment')
 export class TransactionPaymentEntity {
-    @PrimaryGeneratedColumn()
-    Id: number;
+  @PrimaryGeneratedColumn()
+  Id: number;
 
-    @Column({ type: 'decimal', nullable: false })
-    Amount: number;
+  @Column({ type: 'decimal', nullable: false })
+  Amount: number;
 
-    @Column({ type: 'varchar', nullable: false })
-    TransactionCode: string;    
-    
-    @Column({ type: 'varchar', length: 32, nullable: false })
-    TransactionUnlockCode: string;
+  @Column({ type: 'varchar', nullable: false })
+  TransactionCode: string;
 
-    @Column({ type: 'varchar', length: 32, nullable: false })
-    TransactionSecurityCode: string;
+  @Column({ type: 'varchar', length: 32, nullable: false })
+  TransactionUnlockCode: string;
 
-    @Column({ type: 'int', nullable: false })
-    TransactionPaymentStateId: number;
+  @Column({ type: 'varchar', length: 32, nullable: false })
+  TransactionSecurityCode: string;
 
-    @Column({ type: 'varchar', nullable: false })
-    StripePaymentIntentId: string;
+  @Column({ type: 'int', nullable: false })
+  TransactionPaymentStateId: number;
 
-    @Column({ type: 'boolean', default: true })
-    IsStripePayment: boolean;
+  @Column({ type: 'varchar', nullable: false })
+  StripePaymentIntentId: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    StripePaymentLinkId: string;
+  @Column({ type: 'boolean', default: true })
+  IsStripePayment: boolean;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    StripeCheckoutSessionId: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  StripePaymentLinkId: string;
 
-    @Column({ type: 'text', nullable: true })
-    PaymentUrl: string;W
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  StripeCheckoutSessionId: string;
 
-    @Column({ type: 'date', nullable: false })
-    CreatedAt: Date;
+  @Column({ type: 'text', nullable: true })
+  PaymentUrl: string;
+  W;
 
-    @Column({ type: 'boolean', default: true })
-    IsActive: boolean;
+  @Column({ type: 'date', nullable: false })
+  CreatedAt: Date;
+
+  @Column({ type: 'boolean', default: true })
+  IsActive: boolean;
 }

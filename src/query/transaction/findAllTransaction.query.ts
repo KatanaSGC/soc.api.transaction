@@ -1,11 +1,10 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
-export class FindAllTransactionQuery 
-{
-    @IsNotEmpty()
-    Username: string;
+export class FindAllTransactionQuery {
+  @IsNotEmpty()
+  Username: string;
 
-    constructor(username: string) {
-        this.Username = username;
-    }
+  constructor(username: string) {
+    this.Username = username;
+  }
 }

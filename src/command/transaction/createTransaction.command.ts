@@ -1,17 +1,17 @@
-import { IsNotEmpty, IsNumber, Length, Min } from "class-validator";
+import { IsNotEmpty, IsNumber, Length, Min } from 'class-validator';
 
 export class CreateTransactionCommand {
-    @IsNotEmpty()
-    SellerUsername: string;
-    
-    @IsNotEmpty()
-    BuyerUsername: string;
+  @IsNotEmpty()
+  SellerUsername: string;
 
-    @IsNumber()
-    @Min(1)
-    ProfileProductId: number;
+  @IsNotEmpty()
+  BuyerUsername: string;
 
-    @IsNumber()
-    @Min(1)
-    ProductUnits: number;
+  @IsNumber()
+  @Min(1)
+  ProfileProductId: number;
+
+  @IsNumber()
+  @Min(1)
+  ProductUnits: number;
 }

@@ -2,7 +2,6 @@ import { Controller, Get, Param, Render } from '@nestjs/common';
 
 @Controller('transactions/alive-signal')
 export class AliveSignalController {
-
   @Get('/status')
   getAliveSignal(): { status: string } {
     return { status: 'Service is alive' };
@@ -13,7 +12,7 @@ export class AliveSignalController {
   getHello() {
     return {
       name: 'Juan',
-      date: new Date().toLocaleDateString('es-ES')
+      date: new Date().toLocaleDateString('es-ES'),
     };
   }
 
@@ -22,7 +21,7 @@ export class AliveSignalController {
   getHelloWithParam(@Param('name') name: string) {
     return {
       name: name,
-      date: new Date().toLocaleDateString('es-ES')
+      date: new Date().toLocaleDateString('es-ES'),
     };
   }
 }
