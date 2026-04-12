@@ -1,0 +1,28 @@
+# Dockerfile.apache
+# ---------------------------------------------------------------------------
+# Builds an Apache httpd image that acts as a reverse proxy in front of the
+# NestJS application (which runs separately on port 3000).
+#
+# When deployed on OpenShift the Route uses TLS edge termination, so Apache
+# listens on plain HTTP (port 8080) and forwards requests to the NestJS pod.
+# This removes any reliance on a self-signed certificate.
+#
+# Build:
+#   docker build -f Dockerfile.apache -t soc-api-transaction-proxy:latest .
+# ---------------------------------------------------------------------------
+FROM httpd:2.4-alpine
+
+# Remove the default config and replace with our reverse-proxy config.
+RUN rm /usr/local/apache2/conf/httpd.conf
+
+COPY apache/httpd.conf /usr/local/apache2/conf/httpd.conf
+
+# OpenShift runs containers as a random non-root UID.
+# Ensure the process can write to the required directories.
+RUN chown -R daemon:daemon /usr/local/apache2/logs && \
+    chmod -R 755 /usr/local/apache2/logs && \
+    chmod g+rwx /usr/local/apache2/logs
+
+EXPOSE 8080
+
+CMD ["httpd-foreground"]
