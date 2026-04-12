@@ -5,8 +5,9 @@ services:
       target: production
     container_name: soc-api-transaction
     image: transaction-service:latest
-    ports:
-      - "3003:3000"
+    # Expose only on the internal network; Apache proxy is the public entry point.
+    expose:
+      - "3000"
 #    env_file:
 #      - .env
     environment:
@@ -32,6 +33,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - soc-network
+
+  # Apache reverse proxy
+  # Terminates TLS (or forwards plain HTTP when TLS is handled by OpenShift Routes)
+  # and proxies all traffic to the NestJS backend on port 3000.
+  soc-api-transaction-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.apache
+    container_name: soc-api-transaction-proxy
+    image: transaction-service-proxy:latest
+    ports:
+      - "3003:8080"
+    depends_on:
+      - soc-api-transaction
+    restart: unless-stopped
     networks:
       - soc-network
 

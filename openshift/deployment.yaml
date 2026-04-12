@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soc-api-transaction
+  labels:
+    app: soc-api-transaction
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: soc-api-transaction
+  template:
+    metadata:
+      labels:
+        app: soc-api-transaction
+        component: api
+    spec:
+      containers:
+        - name: soc-api-transaction
+          image: transaction-service:latest
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: MARIADB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_HOST
+            - name: MARIADB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_PORT
+            - name: MARIADB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_USERNAME
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_PASSWORD
+            - name: MARIADB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_NAME
+            - name: MARIADB_NAME_PROFILE
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_NAME_PROFILE
+            - name: MARIADB_NAME_PRODUCT
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: MARIADB_NAME_PRODUCT
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: STRIPE_SECRET_KEY
+            - name: APP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: soc-api-transaction-config
+                  key: APP_URL
+            - name: EMAIL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: soc-api-transaction-config
+                  key: EMAIL_HOST
+            - name: EMAIL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: soc-api-transaction-config
+                  key: EMAIL_PORT
+            - name: EMAIL_FROM
+              valueFrom:
+                configMapKeyRef:
+                  name: soc-api-transaction-config
+                  key: EMAIL_FROM
+            - name: EMAIL_ADMIN
+              valueFrom:
+                configMapKeyRef:
+                  name: soc-api-transaction-config
+                  key: EMAIL_ADMIN
+            - name: EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: EMAIL
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: soc-api-transaction-secret
+                  key: EMAIL_PASSWORD
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /alive
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL

@@ -1,0 +1,51 @@
+# OpenShift Route with TLS edge termination
+#
+# Edge termination means OpenShift's router (HAProxy) handles the TLS handshake
+# using a trusted wildcard certificate (*.apps.<cluster-domain>).
+# The backend pod receives plain HTTP traffic — no self-signed certificate is
+# ever exposed to the client, eliminating browser SSL warnings in the Angular app.
+#
+# Usage:
+#   oc apply -f openshift/route.yaml
+#   # Optionally supply your own certificate:
+#   oc create secret tls soc-api-transaction-tls \
+#     --cert=tls.crt --key=tls.key
+#   # Then set spec.tls.certificate / spec.tls.key below.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: soc-api-transaction
+  labels:
+    app: soc-api-transaction
+    component: api
+spec:
+  # Replace with your actual OpenShift application domain, e.g.:
+  # host: soc-api-transaction.apps.cluster.example.com
+  tls:
+    # "edge" = TLS terminated at the OpenShift router using a trusted certificate.
+    # The pod is reached over plain HTTP, so no self-signed cert is involved.
+    termination: edge
+    # Redirect plain HTTP requests to HTTPS automatically.
+    insecureEdgeTerminationPolicy: Redirect
+    # --- Optional: supply your own trusted certificate ---
+    # If you leave these empty, OpenShift uses its default wildcard certificate
+    # (signed by the cluster CA, trusted by browsers when properly configured).
+    # certificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   <your-cert>
+    #   -----END CERTIFICATE-----
+    # key: |
+    #   -----BEGIN PRIVATE KEY-----
+    #   <your-key>
+    #   -----END PRIVATE KEY-----
+    # caCertificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   <your-ca-cert>
+    #   -----END CERTIFICATE-----
+  to:
+    kind: Service
+    name: soc-api-transaction-proxy
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None
